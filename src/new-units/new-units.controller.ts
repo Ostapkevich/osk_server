@@ -15,4 +15,9 @@ export class NewUnitsController {
     return this.unitsService.getUnits(id);
   }
 
+  @Put('saveUnits')
+  updateOrder(@Body() bodyData): any {
+    return this.unitsService.saveUnits(bodyData);
+  }
+
 }

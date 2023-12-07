@@ -11,11 +11,7 @@ export class NewOrderService {
     this.connection = createPool(POOLOPTIONS);
   }
 
-  async findAll() {
-    return this.connection.query('SELECT name FROM machines');
-  }
-
-  async createOrder(bodyData: NewOrderDTO) {
+   async createOrder(bodyData: NewOrderDTO) {
     let strCharacteristics = '';
     let strInsertData = '';
     try {
@@ -47,16 +43,16 @@ export class NewOrderService {
         );
       }
       if (date[0]['affectedRows'] === 1) {
-        return 'ok';
+        return {response:'ok'};
       }
     } catch (error) {
       if (
         error.message ===
         `Duplicate entry '${bodyData.order_machine}' for key 'machines.PRIMARY'`
       ) {
-        return `Изделие с номером '${bodyData.order_machine}' уже существует`;
+        return  { serverError: `Изделие с номером '${bodyData.order_machine}' уже существует` };
       } else {
-        return error.message;
+        return {serverError:error.message};
       }
     }
   }
@@ -103,7 +99,7 @@ export class NewOrderService {
           `SELECT order_machine FROM osk.machines WHERE order_machine='${bodyData.mainData.order_machine}' LIMIT 1`,
         );
         if (canUpdate[0][0] !== undefined) {
-          return 'notUpdated';
+          return {response:'notUpdated'};
         }
       }
 
@@ -115,10 +111,10 @@ export class NewOrderService {
         await this.connection.query(updateInsertStringProps);
       }
       if (updateMain[0]['affectedRows'] > 0) {
-        return 'updated';
+        return {response:'updated'};
       }
     } catch (error) {
-      return error.message;
+      return {serverError:error.message} ;
     }
   }
 
@@ -159,7 +155,7 @@ export class NewOrderService {
     }
   }
 
-  async descriptionOrder(id: string) {
+  async getOrderDescription(id: string) {
     try {
       const analog = await this.connection.query(
         `SELECT machineproperties.idproperty, machineproperties.property, machineproperties.val FROM machineproperties WHERE machineproperties.order_machine = '${id}' `,

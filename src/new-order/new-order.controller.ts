@@ -17,17 +17,17 @@ export class NewOrderController {
   }
 
   @Get('load-analogOrder-:id')
-  getAnalogOrder(@Param('id') id: string) {
+  loadAnalogOrder(@Param('id') id: string) {
     return this.machineService.loadAnalogOrder(id);
   }
 
   @Get('machine-description-:id')
   getOrderDescription(@Param('id') id: string) {
-    return this.machineService.descriptionOrder(id);
+    return this.machineService.getOrderDescription(id);
   }
 
   @Post('new')
-  insertOrder(@Body() bodyData: NewOrderDTO): any {
+  createOrder(@Body() bodyData: NewOrderDTO): any {
     return this.machineService.createOrder(bodyData);
   }
 
