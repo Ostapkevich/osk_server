@@ -50,9 +50,7 @@ export class NewUnitsService {
    number_unit=VALUES(number_unit),
    unit=VALUES(unit),
    weight=VALUES (weight);`;
-      console.log(updateInsertString);
       const results = await this.connection.query(updateInsertString);
-      console.log(results);
       return { response: 'ok'};
     } catch (error) {
       return { serverError: error.message };
