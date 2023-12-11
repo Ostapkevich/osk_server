@@ -44,7 +44,7 @@ export class NewOrderService {
       }
       if (date[0]['affectedRows'] === 1) {
         return {response:'ok'};
-      }
+      } 
     } catch (error) {
       if (
         error.message ===
@@ -112,7 +112,7 @@ export class NewOrderService {
       }
       if (updateMain[0]['affectedRows'] > 0) {
         return {response:'updated'};
-      }
+      } 
     } catch (error) {
       return {serverError:error.message} ;
     }

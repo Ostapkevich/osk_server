@@ -7,12 +7,22 @@ export class NewUnitsController {
 
   @Get('getOrder-:id')
   getOrder(@Param('id') id: string) {
-    return this.unitsService.getOrder(id);
+    return this.unitsService.loadOrder(id);
   }
 
   @Get('getUnits-:id')
   getUnits(@Param('id') id: string) {
-    return this.unitsService.getUnits(id);
+    return this.unitsService.loadUnits(id);
+  }
+
+  @Get('isEmptyUnit-:id')
+  isEmptyUnit(@Param('id') id: number) {
+    return this.unitsService.isEmptyUnit(id);
+  }
+
+  @Delete('deleteUnit-:id')
+  deleteUnit(@Param('id') id: number) {
+    return this.unitsService.deleteUnit(id);
   }
 
   @Put('saveUnits')
