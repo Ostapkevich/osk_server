@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import POOLOPTIONS from 'src/common/pool-options';
-import { Pool, createPool } from 'mysql2/promise';
+import { AppService } from 'src/app.service';
 import { NewOrderDTO } from './dto/new-order.dto';
 import { EditedOrderDTO } from './dto/edited-order.dto';
 
 @Injectable()
 export class NewOrderService {
-  private connection: Pool;
-  constructor() {
-    this.connection = createPool(POOLOPTIONS);
+   constructor(private appService:AppService) {   
   }
 
    async createOrder(bodyData: NewOrderDTO) {
@@ -33,9 +30,9 @@ export class NewOrderService {
       } else {
         strInsertData = `INSERT INTO machines (order_machine, name_machine, description, started, idcustomer, idcategory, shipment) VALUES ('${bodyData.order_machine}', '${bodyData.name_machine}', '${bodyData.description}', '${d}', '${bodyData.idcustomer}', '${bodyData.idcategory}', '${bodyData.shipment}' )`;
       }
-      const date = await this.connection.query(strInsertData);
+      const date = await this.appService.connection.query(strInsertData);
       if (strCharacteristics.length > 0) {
-        await this.connection.query(
+        await this.appService.connection.query(
           `INSERT INTO machineproperties (order_machine, property, val) VALUES ${strCharacteristics.slice(
             0,
             strCharacteristics.length - 1,
@@ -95,7 +92,7 @@ export class NewOrderService {
       }
 
       if (bodyData.mainData.oldNameOrder !== bodyData.mainData.order_machine) {
-        const canUpdate = await this.connection.query(
+        const canUpdate = await this.appService.connection.query(
           `SELECT order_machine FROM osk.machines WHERE order_machine='${bodyData.mainData.order_machine}' LIMIT 1`,
         );
         if (canUpdate[0][0] !== undefined) {
@@ -103,12 +100,12 @@ export class NewOrderService {
         }
       }
 
-      const updateMain = await this.connection.query(strUpdateData);
+      const updateMain = await this.appService.connection.query(strUpdateData);
       if (deleteStringProps.length > 0) {
-        await this.connection.query(deleteStringProps);
+        await this.appService.connection.query(deleteStringProps);
       }
       if (updateInsertStringProps.length > 0) {
-        await this.connection.query(updateInsertStringProps);
+        await this.appService.connection.query(updateInsertStringProps);
       }
       if (updateMain[0]['affectedRows'] > 0) {
         return {response:'updated'};
@@ -120,10 +117,10 @@ export class NewOrderService {
 
   async selectCustCat() {
     try {
-      const customers = await this.connection.query(
+      const customers = await this.appService.connection.query(
         'SELECT idcustomer, customer FROM customers',
       );
-      const categories = await this.connection.query(
+      const categories = await this.appService.connection.query(
         'SELECT idcategory, category FROM machines_categories',
       );
       return { customers: customers[0], categories: categories[0] };
@@ -135,7 +132,7 @@ export class NewOrderService {
 
   async loadNewOrder(id: string) {
     try {
-      const newOrder = await this.connection.query(
+      const newOrder = await this.appService.connection.query(
         `SELECT machines.order_machine, machines.number_machine, machines.name_machine, machines.description, DATE_FORMAT(shipment, '%Y-%m-%d')AS shipment, idcustomer, idcategory FROM machines WHERE machines.isClosed='0' AND machines.order_machine = '${id}' `,
       );
       return newOrder[0][0];
@@ -146,7 +143,7 @@ export class NewOrderService {
 
   async loadAnalogOrder(id: string) {
     try {
-      const analogOrder = await this.connection.query(
+      const analogOrder = await this.appService.connection.query(
         `SELECT machines.number_machine, machines.name_machine, machines.description, idcategory FROM machines WHERE machines.order_machine = '${id}' `,
       );
       return analogOrder[0][0];
@@ -157,7 +154,7 @@ export class NewOrderService {
 
   async getOrderDescription(id: string) {
     try {
-      const analog = await this.connection.query(
+      const analog = await this.appService.connection.query(
         `SELECT machineproperties.idproperty, machineproperties.property, machineproperties.val FROM machineproperties WHERE machineproperties.order_machine = '${id}' `,
       );
       return analog[0];

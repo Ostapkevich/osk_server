@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import POOLOPTIONS from 'src/common/pool-options';
-import { Pool, createPool } from 'mysql2/promise';
+import { AppService } from 'src/app.service';
 import { UnitsDTO } from './dto/saveUnits.dto';
 
 @Injectable()
 export class NewUnitsService {
-  private connection: Pool;
-  constructor() {
-    this.connection = createPool(POOLOPTIONS);
+ 
+  constructor(private appService:AppService) {
   }
 
   async loadOrder(id: string) {
     try {
-      const data = await this.connection.query(`SELECT order_machine, number_machine, name_machine, customers.customer 
+      const data = await this.appService.connection.query(`SELECT order_machine, number_machine, name_machine, customers.customer 
       FROM machines JOIN customers ON machines.idcustomer=customers.idcustomer WHERE order_machine='${id}' AND isClosed=0;`);
       return data[0][0];
     } catch (error) {
@@ -23,7 +21,7 @@ export class NewUnitsService {
 
   async deleteUnit(id: number) {
     try {
-      const data = await this.connection.query(`DELETE FROM units WHERE id_specification=${id};`);
+      const data = await this.appService.connection.query(`DELETE FROM units WHERE id_specification=${id};`);
       if (data[0]['affectedRows'] > 0) {
         return { response: 'ok' };
       }
@@ -34,7 +32,7 @@ export class NewUnitsService {
 
   async isEmptyUnit(id: number) {
     try {
-      const data = await this.connection.query(`SELECT id_specification FROM unit_consist WHERE id_specification=${id} LIMIT 1;`);
+      const data = await this.appService.connection.query(`SELECT id_specification FROM unit_consist WHERE id_specification=${id} LIMIT 1;`);
       console.log((data[0] as []).length)
       return data[0];
     } catch (error) {
@@ -44,7 +42,7 @@ export class NewUnitsService {
 
   async loadUnits(id: string) {
     try {
-      const data = await this.connection.query(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine='${id}' ORDER BY ind;`);
+      const data = await this.appService.connection.query(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine='${id}' ORDER BY ind;`);
       return data[0];
     } catch (error) {
       return { serverError: error.message };
@@ -72,7 +70,7 @@ export class NewUnitsService {
    number_unit=VALUES(number_unit),  
    unit=VALUES(unit),
    weight=VALUES (weight);`;
-      const results = await this.connection.query(updateInsertString);
+      const results = await this.appService.connection.query(updateInsertString);
       console.log(updateInsertString)
       console.log(results)
       if (results[0]['affectedRows'] > 0) {
