@@ -27,6 +27,7 @@ export class NewUnitsController {
 
   @Put('saveUnits')
   updateOrder(@Body() bodyData): any {
+    console.log('111')
     return this.unitsService.saveUnits(bodyData);
   }
 
