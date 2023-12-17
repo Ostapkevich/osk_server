@@ -6,34 +6,7 @@ export class NewOrderDTO {
   readonly idcustomer: number;
   readonly idcategory: number;
   readonly shipment: string;
-  readonly idproperty: number;
+  readonly weight:number;
   readonly plan: string;
-  readonly char0: string;
-  readonly val0: string;
-  readonly char1: string;
-  readonly val1: string;
-  readonly char2: string;
-  readonly val2: string;
-  readonly char3: string;
-  readonly val3: string;
-  readonly char4: string;
-  readonly val4: string;
-  readonly char5: string;
-  readonly val5: string;
-  readonly char6: string;
-  readonly val6: string;
-  readonly char7: string;
-  readonly val7: string;
-  readonly char8: string;
-  readonly val8: string;
-  readonly char9: string;
-  readonly val9: string;
-  readonly char10: string;
-  readonly val10: string;
-  readonly char11: string;
-  readonly val11: string;
-  readonly char12: string;
-  readonly val12: string;
-  readonly char13: string;
-  readonly val13: string;
+ 
 }

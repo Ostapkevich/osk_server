@@ -7,11 +7,16 @@ import { Pool, createPool } from 'mysql2/promise';
 @Global()
 @Injectable()
 export class AppService {
-  connection: Pool = createPool(POOLOPTIONS);;
+  private connection: Pool = createPool(POOLOPTIONS);;
   constructor() { }
 
-  async getData(...queries: string[]) {
+  async query(...queries: string[]) {
     const data = await Promise.all(queries.map(query => this.connection.query(query)));
+    return data;
+  }
+
+  async execute(sql:string, params: any) {
+    const data = await this.connection.execute(sql, params);
     return data;
   }
 

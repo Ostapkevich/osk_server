@@ -1,4 +1,4 @@
-import { IProperties } from './interfaseNewOrder';
+import { IProperties } from '../iNewOrder';
 
 export class EditedOrderDTO {
   mainData: {
@@ -10,7 +10,9 @@ export class EditedOrderDTO {
     idcategory: number;
     shipment: string | null;
     oldNameOrder: string;
+    weight:number;
+    plan: string;
   };
-  updateInsertProps: Array<IProperties>;
-  deleteProps: Array<IProperties>;
+  insertProps: Array<IProperties>;
+  
 }
