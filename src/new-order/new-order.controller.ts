@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Param, Body, Put } from '@nestjs/common';
+import { Response } from 'express';
 import { Iorder } from './iNewOrder';
 import { AppService } from 'src/app.service';
 
@@ -11,9 +12,10 @@ export class NewOrderController {
       const sql1 = 'SELECT idcustomer, customer FROM customers';
       const sql2 = 'SELECT idcategory, category FROM machines_categories';
       const data = await this.appService.query(sql1, sql2);
+      console.log({ customers: data[0][0], categories: data[1][0] })
       return { customers: data[0][0], categories: data[1][0] };
     } catch (error) {
-      return { serverError: error.message };
+      return { serverError: 'Ошибка сервера: ' + error.message };
     }
   }
 
@@ -32,7 +34,7 @@ export class NewOrderController {
       const data = await this.appService.query(orderSQL, propsSQL);
       return { order: data[0][0][0], properties: data[1][0] }
     } catch (error) {
-      return { serverError: error.message };
+      return { serverError: 'Ошибка сервера: ' + error.message };
     }
   }
 
@@ -61,13 +63,14 @@ export class NewOrderController {
       }
       return { response: 'ok' };
     } catch (error) {
+      console.log(error);
       if (
         error.message ===
         `Duplicate entry '${bodyData.mainData.order_machine}' for key 'machines.PRIMARY'`
       ) {
         return { serverError: `Изделие с номером '${bodyData.mainData.order_machine}' уже существует` };
       } else {
-        return { serverError: error.message };
+        return { serverError: 'Ошибка сервера: ' + error.message };
       }
     }
   }
@@ -95,14 +98,14 @@ export class NewOrderController {
           insertStringProps = insertStringProps + `('${item.order_machine}', '${item.property}', '${item.val}'),`;
         }
         insertStringProps = `INSERT INTO osk.machineproperties (order_machine, property, val) VALUES ${insertStringProps.slice(0, insertStringProps.length - 1)};`;
-        await this.appService.query(insertStringProps);
+         await this.appService.query(insertStringProps);
       }
       if (updateMain[0][0]['affectedRows'] > 0) {
         return { response: 'ok' };
       }
 
     } catch (error) {
-      return { serverError: error.message };
+       return { serverError: 'Ошибка сервера: ' + error.message };
     }
   }
 
