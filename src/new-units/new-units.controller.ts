@@ -17,12 +17,10 @@ export class NewUnitsController {
        DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [id]);
         return [{ order: order[0], units: units[0] }];
       }
-
     } catch (error) {
       return { serverError: error.message };
     }
   }
-
 
   @Get('getUnits-:id')
   async getUnits(@Param('id') id: string) {
@@ -32,7 +30,6 @@ export class NewUnitsController {
     } catch (error) {
       return { serverError: error.message };
     }
-
   }
 
   @Get('isEmptyUnit-:id')
@@ -43,7 +40,6 @@ export class NewUnitsController {
     } catch (error) {
       return { serverError: error.message };
     }
-
   }
 
   @Delete('deleteUnit')
@@ -52,7 +48,6 @@ export class NewUnitsController {
     try {
       await this.appService.execute(`DELETE FROM units WHERE id_specification=?;`, [sp]);
       const data = await this.appService.execute(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [order]);
-      console.log('data ',data)
       return data[0];
     } catch (error) {
       return { serverError: error.message };
@@ -63,7 +58,7 @@ export class NewUnitsController {
   async saveUnits(@Param('id') id: number,
     @Body() bodyData) {
     try {
-      // await this.appService.execute(`INSERT INTO osk.units (id_specification, unit, number_unit, name_unit, weight, ind, order_machine) VALUES(?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id_specification=VALUES(?), unit=VALUES(?), number_unit=VALUES(?), name_unit=VALUES(?), weight=VALUES(?), ind=VALUES(?), order_machine=VALUES(?);`, bodyData);
+     
       let updateInsertString: string = '';
       for (const item of bodyData) {
         updateInsertString =

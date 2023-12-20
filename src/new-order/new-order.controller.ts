@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Param, Body, Put } from '@nestjs/common';
-import { Response } from 'express';
 import { Iorder } from './iNewOrder';
 import { AppService } from 'src/app.service';
 
@@ -12,7 +11,6 @@ export class NewOrderController {
       const sql1 = 'SELECT idcustomer, customer FROM customers';
       const sql2 = 'SELECT idcategory, category FROM machines_categories';
       const data = await this.appService.query(sql1, sql2);
-      console.log({ customers: data[0][0], categories: data[1][0] })
       return { customers: data[0][0], categories: data[1][0] };
     } catch (error) {
       return { serverError: 'Ошибка сервера: ' + error.message };
