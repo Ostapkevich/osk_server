@@ -10,7 +10,6 @@ export class AppController {
 
   @Get('/')
   getHello(@Res() response: Response): void {
-    console.log(join(__dirname, '../oskmanager', 'index.html'));
     return response.sendFile(join(__dirname, '../oskmanager', 'index.html'));
   }
 }

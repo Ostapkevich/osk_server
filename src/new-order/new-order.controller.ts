@@ -61,8 +61,7 @@ export class NewOrderController {
       }
       return { response: 'ok' };
     } catch (error) {
-      console.log(error);
-      if (
+            if (
         error.message ===
         `Duplicate entry '${bodyData.mainData.order_machine}' for key 'machines.PRIMARY'`
       ) {
