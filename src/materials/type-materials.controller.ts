@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, Body } from '@nestjs/common';
+import { Controller, Get, Param, Put, Body, Delete } from '@nestjs/common';
 import { AppService } from 'src/app.service';
 
 @Controller('types')
@@ -16,18 +16,18 @@ export class TypeMaterialsController {
                 case 'hardware_type':
                     sql = `SELECT id_type, name_type, ind FROM ${table} WHERE id_type <> 1 ORDER BY ind;`
                     break;
-                case 'rolled_type':
-                    sql = `SELECT id_type, name_type, ind, uselength FROM ${table} WHERE id_type <> 1 ORDER BY ind;`
+                case 'material_type':
+                    sql = `SELECT id_type, name_type, ind FROM ${table} WHERE id_type <> 1 ORDER BY ind;`
                     break;
-                default:
-                    break;
+                case 'purchased_type':
+                    sql = `SELECT id_type, name_type, ind FROM ${table} WHERE id_type <> 1 ORDER BY ind;`
             }
 
             const typesMaterialData = await this.appService.query(sql);
             return { typesMaterial: typesMaterialData[0][0] };
         } catch (error) {
 
-            return { serverError: error.message };
+            return { serverError: 'Ошибка сервера:' + error.message };
         }
     }
 
@@ -85,6 +85,24 @@ export class TypeMaterialsController {
             }
         } catch (error) {
             return { serverError: 'Ошибка сервера: ' + error.message };
+        }
+    }
+
+    @Delete('deleteType/:table/:id')
+    async delete(@Param('table') table: string, @Param('id') id: number) {
+        try {
+            let sql = `DELETE FROM ${table} WHERE id_type=?;`;
+            const data = await this.appService.execute(sql, [id]);
+            if (data[0]['affectedRows'] === 1) {
+                const data = this.loadTypes(table);
+                return (data);
+            }
+        } catch (error) {
+           if (error.errno === 1451) {
+                return { serverError: 'Нельзя удалить данный тип материала, поскольку в базе имееются данные, связанные с этим типом! ' };
+            } else {
+                return { serverError: 'Ошибка сервера: ' + error.message };
+            }
         }
     }
 

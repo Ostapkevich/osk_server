@@ -54,8 +54,8 @@ export class HardwareController {
         str = str + `name_hardware LIKE '%${bodyData.sql0}%' `;
       }
       let sql: string;
-      if (+rolledtype === 1) {
-        if (+steel === 1) {
+      if (+rolledtype === -1) {
+        if (+steel === -1) {
           if (str.length > 0) {
             sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`;
           } else {
@@ -69,7 +69,7 @@ export class HardwareController {
           }
         }
       } else {
-        if (+steel === 1) {
+        if (+steel === -1) {
           if (str.length > 0) {
             sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           } else {
@@ -84,10 +84,9 @@ export class HardwareController {
         }
       }
      
-      const hardwaresData = await this.appService.query(sql);
-      return { hardwares: hardwaresData[0][0] };
+      const hardwaresData = await this.appService.query(sql);   
+          return { hardwares: hardwaresData[0][0] };
     } catch (error) {
-      console.log(error)
        return { serverError: error.message };
     }
   }

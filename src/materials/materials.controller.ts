@@ -14,13 +14,12 @@ export class MaterailsController {
   async onLoad() {
     try {
       const material_type = `SELECT id_type, name_type, ind FROM ${this.categoryTable} ORDER BY ind;`;
-      const materials = `SELECT idmaterial, name_material, x1, x2, weight FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT 0,20;`
+      const materials = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT 0,20;`
       const data = await this.appService.query(material_type, materials);
       return { material_type: data[0][0], materials: data[1][0] };
 
     } catch (error) {
-      console.log(error)
-      return { serverError: error.message };
+           return { serverError: error.message };
     }
   }
 
@@ -32,8 +31,7 @@ export class MaterailsController {
         return { response: 'ok' };
       }
     } catch (error) {
-      console.log(error)
-      return { serverError: error.message };
+        return { serverError: error.message };
     }
   }
 
@@ -59,24 +57,23 @@ export class MaterailsController {
         str = str + `name_material LIKE '%${bodyData.sql0}%' `;
       }
       let sql: string;
-      if (+materialtype === 1) {
-
+      if (+materialtype === -1) {
         if (str.length > 0) {
-          sql = `SELECT idmaterial, name_material, x1, x2, weight FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type WHERE ${str} ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type WHERE ${str} ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
         } else {
-          sql = `SELECT idmaterial, name_material, x1, x2, weight FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT ${position},20;`
         }
       } else {
         if (str.length > 0) {
-          sql = `SELECT idmaterial, name_material, x1, x2, weight FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type WHERE ${this.itemTable}.id_type=${materialtype} AND ${str} ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type WHERE ${this.itemTable}.id_type=${materialtype} AND ${str} ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT ${position},20;`
         } else {
-          sql = `SELECT idmaterial, name_material, x1, x2, weight FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type  WHERE ${this.itemTable}.id_type=${materialtype}  ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM ${this.itemTable} JOIN ${this.categoryTable} ON ${this.itemTable}.id_type=${this.categoryTable}.id_type  WHERE ${this.itemTable}.id_type=${materialtype}  ORDER BY ${this.categoryTable}.ind, x1, x2 LIMIT ${position},20;`
         }
       }
+    
       const materialData = await this.appService.query(sql);
       return { materials: materialData[0][0] };
     } catch (error) {
-      console.log(error)
       return { serverError: error.message };
     }
   }
@@ -112,9 +109,9 @@ export class MaterailsController {
           arrData.push(param);
         }
       }
-      const strUpdateData = `UPDATE ${this.itemTable} SET name_material=?, x1=?, x2=?, weight=? WHERE idmaterial=?`;
+      const strUpdateData = `UPDATE ${this.itemTable} SET name_material=?, x1=?, x2=?, units=?, specific_units=?, percent=? WHERE idmaterial=?`;
       const data = await this.appService.execute(strUpdateData, arrData);
-
+console.log(arrData)
       if (data[0]['affectedRows'] === 1) {
         return { response: 'ok' };
       }

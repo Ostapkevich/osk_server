@@ -20,29 +20,32 @@ export class RolledController {
   }
 
   @Delete('deleteRolled')
-  async deleteUnit(@Query('q0') id: string)
-    {
+  async deleteUnit(@Query('q0') id: string) {
     try {
       const data = await this.appService.execute(`DELETE FROM rolled WHERE id_rolled=?;`, [id]);
       if (data[0]['affectedRows'] === 1) {
         return { response: 'ok' };
       }
     } catch (error) {
-      return { serverError: error.message };
+      if (error.errno === 1451) {
+        return { serverError: 'Нельзя удалить данный тип материала, поскольку в базе имееются данные, связанные с этим типом! ' };
+      } else {
+        return { serverError: 'Ошибка сервера: ' + error.message };
+      }
     }
   }
 
 
-  @Get('isUsedRolled/:id')
-  async isUsedRolled(@Param('id') id: number) {
-    try {
-      const sql = `SELECT id_rolled FROM drawing WHERE id_rolled=? LIMIT 1;`;
-      const data = await this.appService.execute(sql, [1]);
-      return data[0];
-    } catch (error) {
-      return { serverError: error.message };
-    }
-  }
+  /*  @Get('isUsedRolled/:id')
+   async isUsedRolled(@Param('id') id: number) {
+     try {
+       const sql = `SELECT id_rolled FROM drawing WHERE id_rolled=? LIMIT 1;`;
+       const data = await this.appService.execute(sql, [1]);
+       return data[0];
+     } catch (error) {
+       return { serverError: error.message };
+     }
+   } */
 
 
   @Get('getRolled/:rolledtype/:steel/:position')
@@ -54,8 +57,8 @@ export class RolledController {
         str = str + `name_rolled LIKE '%${bodyData.sql0}%' `;
       }
       let sql: string;
-      if (+rolledtype === 1) {
-        if (+steel === 1) {
+      if (+rolledtype === -1) {
+        if (+steel === -1) {
           if (str.length > 0) {
             sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type  WHERE ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
@@ -69,7 +72,7 @@ export class RolledController {
           }
         }
       } else {
-        if (+steel === 1) {
+        if (+steel === -1) {
           if (str.length > 0) {
             sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
@@ -86,7 +89,7 @@ export class RolledController {
       const rolledsData = await this.appService.query(sql);
       return { rolleds: rolledsData[0][0] };
     } catch (error) {
-    
+
       return { serverError: error.message };
     }
   }
