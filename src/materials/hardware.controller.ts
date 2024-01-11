@@ -28,12 +28,16 @@ export class HardwareController {
         return { response: 'ok' };
       }
     } catch (error) {
-      return { serverError: error.message };
+      if (error.errno === 1451) {
+        return { serverError: 'Удаление невозможно! В базе имеются данные, использующие данную позицию!' };
+      } else {
+        return { serverError: 'Ошибка сервера: ' + error.message };
+      }
     }
   }
 
 
-  @Get('isUsedHardware/:id')
+ /*  @Get('isUsedHardware/:id')
   async isUsedRolled(@Param('id') id: number) {
     try {
       const sql = `SELECT idhardware FROM unit_consist WHERE idhardware=? LIMIT 1;`;
@@ -42,7 +46,7 @@ export class HardwareController {
     } catch (error) {
       return { serverError: error.message };
     }
-  }
+  } */
 
 
   @Get('getHardware/:rolledtype/:steel/:position')

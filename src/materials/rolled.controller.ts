@@ -28,7 +28,7 @@ export class RolledController {
       }
     } catch (error) {
       if (error.errno === 1451) {
-        return { serverError: 'Нельзя удалить данный тип материала, поскольку в базе имееются данные, связанные с этим типом! ' };
+        return { serverError: 'Удаление невозможно! В базе имеются данные, использующие данную позицию!' };
       } else {
         return { serverError: 'Ошибка сервера: ' + error.message };
       }
@@ -36,16 +36,6 @@ export class RolledController {
   }
 
 
-  /*  @Get('isUsedRolled/:id')
-   async isUsedRolled(@Param('id') id: number) {
-     try {
-       const sql = `SELECT id_rolled FROM drawing WHERE id_rolled=? LIMIT 1;`;
-       const data = await this.appService.execute(sql, [1]);
-       return data[0];
-     } catch (error) {
-       return { serverError: error.message };
-     }
-   } */
 
 
   @Get('getRolled/:rolledtype/:steel/:position')
