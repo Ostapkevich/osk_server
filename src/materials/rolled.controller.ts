@@ -11,7 +11,7 @@ export class RolledController {
     try {
       const rolled_type = 'SELECT id_type, name_type, ind, uselength FROM rolled_type ORDER BY ind;';
       const steels = 'SELECT idsteel, steel, ind FROM steels ORDER BY ind';
-      const rolleds = 'SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT 0,20;'
+      const rolleds = 'SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT 0,20;'
       const data = await this.appService.query(rolled_type, steels, rolleds);
       return { rolled_type: data[0][0], steels: data[1][0], rolleds: data[2][0] };
     } catch (error) {
@@ -22,7 +22,7 @@ export class RolledController {
   @Delete('deleteRolled')
   async deleteUnit(@Query('q0') id: string) {
     try {
-      const data = await this.appService.execute(`DELETE FROM rolled WHERE id_rolled=?;`, [id]);
+      const data = await this.appService.execute(`DELETE FROM rolled WHERE id_item=?;`, [id]);
       if (data[0]['affectedRows'] === 1) {
         return { response: 'ok' };
       }
@@ -44,35 +44,35 @@ export class RolledController {
     try {
       let str = ``;
       if (bodyData.hasOwnProperty('sql0')) {
-        str = str + `name_rolled LIKE '%${bodyData.sql0}%' `;
+        str = str + `name_item LIKE '%${bodyData.sql0}%' `;
       }
       let sql: string;
       if (+rolledtype === -1) {
         if (+steel === -1) {
           if (str.length > 0) {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type  WHERE ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type  WHERE ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         } else {
           if (str.length > 0) {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         }
       } else {
         if (+steel === -1) {
           if (str.length > 0) {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         } else {
           if (str.length > 0) {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_rolled, name_rolled, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         }
       }
@@ -95,7 +95,7 @@ export class RolledController {
           arrData.push(param);
         }
       }
-      strInsertData = `INSERT rolled (id_type, idsteel, name_rolled, d, weight, t) VALUES (?,?,?,?,?,?)`;
+      strInsertData = `INSERT rolled (id_type, idsteel, name_item, d, weight, t) VALUES (?,?,?,?,?,?)`;
       const insertMain = await this.appService.execute(strInsertData, arrData);
       if (insertMain[0]['affectedRows'] === 1) {
         return { response: 'ok' };
@@ -115,7 +115,7 @@ export class RolledController {
           arrData.push(param);
         }
       }
-      const strUpdateData = `UPDATE rolled SET name_rolled=?, d=?, weight=?, t=? WHERE id_rolled=?`;
+      const strUpdateData = `UPDATE rolled SET name_item=?, d=?, weight=?, t=? WHERE id_item=?`;
       const data = await this.appService.execute(strUpdateData, arrData);
 
       if (data[0]['affectedRows'] === 1) {

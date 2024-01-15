@@ -11,7 +11,7 @@ export class HardwareController {
     try {
       const hardware_type = 'SELECT id_type, name_type, ind FROM hardware_type ORDER BY ind;';
       const steels = 'SELECT idsteel, steel, ind FROM steels ORDER BY ind';
-      const hardwares = 'SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT 0,20 ;'
+      const hardwares = 'SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT 0,20 ;'
       const data = await this.appService.query(hardware_type, steels, hardwares);
       return { hardware_type: data[0][0], steels: data[1][0], hardwares: data[2][0] };
     } catch (error) {
@@ -23,7 +23,7 @@ export class HardwareController {
   async deleteUnit(@Query('q0') id: string)
     {
     try {
-      const data = await this.appService.execute(`DELETE FROM hardware WHERE idhardware=?;`, [id]);
+      const data = await this.appService.execute(`DELETE FROM hardware WHERE id_item=?;`, [id]);
       if (data[0]['affectedRows'] === 1) {
         return { response: 'ok' };
       }
@@ -40,7 +40,7 @@ export class HardwareController {
  /*  @Get('isUsedHardware/:id')
   async isUsedRolled(@Param('id') id: number) {
     try {
-      const sql = `SELECT idhardware FROM unit_consist WHERE idhardware=? LIMIT 1;`;
+      const sql = `SELECT id_item FROM unit_consist WHERE id_item=? LIMIT 1;`;
       const data = await this.appService.execute(sql, [1]);
       return data[0];
     } catch (error) {
@@ -55,35 +55,35 @@ export class HardwareController {
     try {
       let str = ``;
       if (bodyData.hasOwnProperty('sql0')) {
-        str = str + `name_hardware LIKE '%${bodyData.sql0}%' `;
+        str = str + `name_item LIKE '%${bodyData.sql0}%' `;
       }
       let sql: string;
       if (+rolledtype === -1) {
         if (+steel === -1) {
           if (str.length > 0) {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`;
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`;
           } else {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`;
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`;
           }
         } else {
           if (str.length > 0) {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.idsteel=${steel} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.idsteel=${steel} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.idsteel=${steel}  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.idsteel=${steel}  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           }
         }
       } else {
         if (+steel === -1) {
           if (str.length > 0) {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype}  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype}  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           }
         } else {
           if (str.length > 0) {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND hardware.idsteel=${steel} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND hardware.idsteel=${steel} AND ${str} ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT idhardware, name_hardware, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND hardware.idsteel=${steel}  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, L, steels.steel, weight FROM hardware JOIN steels ON hardware.idsteel=steels.idsteel JOIN hardware_type ON hardware.id_type=hardware_type.id_type WHERE hardware.id_type=${rolledtype} AND hardware.idsteel=${steel}  ORDER BY hardware_type.ind, d, L, steels.ind LIMIT ${position},20;`
           }
         }
       }
@@ -106,7 +106,7 @@ export class HardwareController {
           arrData.push(param);
         }
       }
-      strInsertData = `INSERT hardware (id_type, idsteel, name_hardware, d, weight, L) VALUES (?,?,?,?,?,?)`;
+      strInsertData = `INSERT hardware (id_type, idsteel, name_item, d, weight, L) VALUES (?,?,?,?,?,?)`;
        const insertMain = await this.appService.execute(strInsertData, arrData);
       if (insertMain[0]['affectedRows'] === 1) {
         return { response: 'ok' };
@@ -126,7 +126,7 @@ export class HardwareController {
           arrData.push(param);
         }
       }
-      const strUpdateData = `UPDATE hardware SET name_hardware=?, d=?, weight=?, L=? WHERE idhardware=?`;
+      const strUpdateData = `UPDATE hardware SET name_item=?, d=?, weight=?, L=? WHERE id_item=?`;
       const data = await this.appService.execute(strUpdateData, arrData);
 
       if (data[0]['affectedRows'] === 1) {

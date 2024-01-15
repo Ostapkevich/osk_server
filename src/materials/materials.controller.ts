@@ -12,7 +12,7 @@ export class MaterailsController {
   async onLoad() {
     try {
       const material_type = `SELECT id_type, name_type, ind FROM material_type ORDER BY ind;`;
-      const materials = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type ORDER BY material_type.ind, x1, x2 LIMIT 0,20;`
+      const materials = `SELECT id_item, name_item, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type ORDER BY material_type.ind, x1, x2 LIMIT 0,20;`
       const data = await this.appService.query(material_type, materials);
       return { material_type: data[0][0], materials: data[1][0] };
     } catch (error) {
@@ -23,7 +23,7 @@ export class MaterailsController {
   @Delete('deleteMaterial')
   async deleteUnit(@Query('q0') id: string) {
     try {
-      const data = await this.appService.execute(`DELETE FROM material WHERE idmaterial=?;`, [id]);
+      const data = await this.appService.execute(`DELETE FROM material WHERE id_item=?;`, [id]);
       if (data[0]['affectedRows'] === 1) {
         return { response: 'ok' };
       }
@@ -43,20 +43,20 @@ export class MaterailsController {
     try {
       let str = ``;
       if (bodyData.hasOwnProperty('sql0')) {
-        str = str + `name_material LIKE '%${bodyData.sql0}%' `;
+        str = str + `name_item LIKE '%${bodyData.sql0}%' `;
       }
       let sql: string;
       if (+materialtype === -1) {
         if (str.length > 0) {
-          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type WHERE ${str} ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT id_item, name_item, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type WHERE ${str} ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
         } else {
-          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT id_item, name_item, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
         }
       } else {
         if (str.length > 0) {
-          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type WHERE material.id_type=${materialtype} AND ${str} ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT id_item, name_item, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type WHERE material.id_type=${materialtype} AND ${str} ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
         } else {
-          sql = `SELECT idmaterial, name_material, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type  WHERE material.id_type=${materialtype}  ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
+          sql = `SELECT id_item, name_item, x1, x2, units, specific_units, percent FROM material JOIN material_type ON material.id_type=material_type.id_type  WHERE material.id_type=${materialtype}  ORDER BY material_type.ind, x1, x2 LIMIT ${position},20;`
         }
       }
 
@@ -79,7 +79,7 @@ export class MaterailsController {
           arrData.push(param);
         }
       }
-      strInsertData = `INSERT material (id_type, name_material, x1, x2, units, specific_units, percent) VALUES (?,?,?,?,?,?,?)`;
+      strInsertData = `INSERT material (id_type, name_item, x1, x2, units, specific_units, percent) VALUES (?,?,?,?,?,?,?)`;
       const insertMain = await this.appService.execute(strInsertData, arrData);
       if (insertMain[0]['affectedRows'] === 1) {
         return { response: 'ok' };
@@ -100,7 +100,7 @@ export class MaterailsController {
           arrData.push(param);
         }
       }
-      const strUpdateData = `UPDATE material SET name_material=?, x1=?, x2=?, units=?, specific_units=?, percent=? WHERE idmaterial=?`;
+      const strUpdateData = `UPDATE material SET name_item=?, x1=?, x2=?, units=?, specific_units=?, percent=? WHERE id_item=?`;
       const data = await this.appService.execute(strUpdateData, arrData);
       if (data[0]['affectedRows'] === 1) {
         return { response: 'ok' };
