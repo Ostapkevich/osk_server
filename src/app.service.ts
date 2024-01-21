@@ -15,9 +15,18 @@ export class AppService {
     return data;
   }
 
-  async execute(sql:string, params: any) {
+  async execute(sql: string, params: any) {
     const data = await this.connection.execute(sql, params);
     return data;
   }
+ 
+ 
+
+  async executeMultiple(bodyData: any[] ,...queries: string[]) {
+    const data = await Promise.all(queries.map((query, index) => this.connection.execute(query, bodyData[index])));
+   
+    return data;
+  }
+ 
 
 }

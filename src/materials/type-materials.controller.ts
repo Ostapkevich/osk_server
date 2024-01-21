@@ -55,7 +55,7 @@ export class TypeMaterialsController {
             const data = this.loadTypes(table);
             return (data);
         } catch (error) {
-            console.log(error)
+           
             return { serverError: error.message };
         }
     }

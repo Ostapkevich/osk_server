@@ -1,16 +1,16 @@
 interface ItypeAndsteel {
   rolled_type: [
     {
-      idrolled_type: number;
-      name_typerolled: string;
-      ind: number;
+      idrolled_type: number,
+      name_typerolled: string,
+      ind: number,
     }
   ],
   steels: [
     {
-      idsteel: number;
-      steel: string;
-      index: number;
+      idsteel: number,
+      steel: string,
+      index: number,
     }
   ]
 }
@@ -24,4 +24,4 @@ interface IaddRolled {
   weight: number,
   t?: number
 }
-export { ItypeAndsteel , IaddRolled}
+export { ItypeAndsteel, IaddRolled}

@@ -7,6 +7,7 @@ import { join } from 'path';
 import { NewOrderModule } from './new-order/new-order.module';
 import { NewUnitsModule } from './new-units/new-units.module';
 import { MaterialsModule } from './materials/materials.module';
+import { DrawingsController } from './drawings/drawings.controller';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { MaterialsModule } from './materials/materials.module';
     NewUnitsModule,
     MaterialsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, DrawingsController],
   providers: [AppService],
   exports:[AppService],
 })

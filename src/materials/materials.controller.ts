@@ -20,6 +20,19 @@ export class MaterailsController {
     }
   }
 
+  
+  @Get('getUseLenth/:id')
+  async getUseLenth(@Param() id:number) {
+    try {
+      const  sql= `SELECT uselength FROM rolled_type where id_type in (select id_type from rolled where id_item=${id}) ;`;
+      const data = await this.appService.query(sql);
+      return {useLenth: data[0][0]};
+    } catch (error) {
+      return { serverError: error.message };
+    }
+  }
+
+
   @Delete('deleteMaterial')
   async deleteUnit(@Query('q0') id: string) {
     try {

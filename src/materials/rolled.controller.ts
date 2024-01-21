@@ -11,7 +11,7 @@ export class RolledController {
     try {
       const rolled_type = 'SELECT id_type, name_type, ind, uselength FROM rolled_type ORDER BY ind;';
       const steels = 'SELECT idsteel, steel, ind FROM steels ORDER BY ind';
-      const rolleds = 'SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT 0,20;'
+      const rolleds = 'SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT 0,20;'
       const data = await this.appService.query(rolled_type, steels, rolleds);
       return { rolled_type: data[0][0], steels: data[1][0], rolleds: data[2][0] };
     } catch (error) {
@@ -50,29 +50,29 @@ export class RolledController {
       if (+rolledtype === -1) {
         if (+steel === -1) {
           if (str.length > 0) {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type  WHERE ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type  WHERE ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         } else {
           if (str.length > 0) {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         }
       } else {
         if (+steel === -1) {
           if (str.length > 0) {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         } else {
           if (str.length > 0) {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel} AND ${str} ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           } else {
-            sql = `SELECT id_item, name_item, d, t, steels.steel, weight FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
+            sql = `SELECT id_item, name_item, d, t, steels.steel, weight, rolled_type.uselength FROM rolled JOIN steels ON rolled.idsteel=steels.idsteel JOIN rolled_type ON rolled_type.id_type=rolled.id_type WHERE rolled.id_type=${rolledtype} AND rolled.idsteel=${steel}  ORDER BY rolled_type.ind, d, t, steels.ind LIMIT ${position},20;`
           }
         }
       }
