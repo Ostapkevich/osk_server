@@ -8,18 +8,20 @@ import { NewOrderModule } from './new-order/new-order.module';
 import { NewUnitsModule } from './new-units/new-units.module';
 import { MaterialsModule } from './materials/materials.module';
 import { DrawingsController } from './drawings/drawings.controller';
+import { ScanService } from './scan/scan.service';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'oskmanager'),
+      rootPath: join(__dirname ,'../..','drawings'),
     }),
+  
     NewOrderModule,
     NewUnitsModule,
     MaterialsModule,
   ],
   controllers: [AppController, DrawingsController],
-  providers: [AppService],
+  providers: [AppService, ScanService],
   exports:[AppService],
 })
 export class AppModule {}
