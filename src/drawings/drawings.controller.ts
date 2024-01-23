@@ -1,6 +1,6 @@
 import { Controller, Put, Body, Param, Post, Get } from '@nestjs/common';
 import { AppService } from 'src/app.service';
-import { ScanService } from 'src/scan/scan.service';
+import { ScanService } from 'src/drawings/scan.service';
 import * as path from 'path';
 
 @Controller('drawings')
