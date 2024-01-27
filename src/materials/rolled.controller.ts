@@ -1,10 +1,14 @@
 import { Controller, Get, Param, Body, Query, Post, Put, Delete } from '@nestjs/common';
 import { AppService } from 'src/app.service';
 
-
 @Controller('/rolled')
 export class RolledController {
-  constructor(private appService: AppService) { }
+
+  constructor(private appService: AppService) { 
+  
+  }
+
+
 
   @Get('onLoad')
   async onLoad() {

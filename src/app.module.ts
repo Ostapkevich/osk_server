@@ -5,14 +5,16 @@ import { join } from 'path';
 import { NewOrderModule } from './new-order/new-order.module';
 import { NewUnitsModule } from './new-units/new-units.module';
 import { MaterialsModule } from './materials/materials.module';
-//import { AppService } from './app.service';
+import { DrawingsModule } from './drawings/drawings.module';
+import { ViewsModule } from './view/views.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname ,'../..','drawings'),
     }),
-  
+    ViewsModule,
+  DrawingsModule,
     NewOrderModule,
     NewUnitsModule,
     MaterialsModule,
@@ -21,4 +23,5 @@ import { MaterialsModule } from './materials/materials.module';
   providers: [],
   exports:[],
 })
-export class AppModule {}
+export class AppModule { 
+}

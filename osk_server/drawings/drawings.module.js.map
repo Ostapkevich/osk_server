@@ -1,0 +1,1 @@
+{"version":3,"file":"drawings.module.js","sourceRoot":"","sources":["../../src/drawings/drawings.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,iDAA6C;AAC7C,+DAA2D;AAC3D,gDAA6C;AAMtC,IAAM,cAAc,GAApB,MAAM,cAAc;CAAG,CAAA;AAAjB,cAAc;IAJ1B,IAAA,eAAM,EAAC;QACJ,SAAS,EAAE,CAAC,wBAAU,EAAC,0BAAW,CAAC;QACnC,WAAW,EAAE,CAAC,wCAAkB,CAAC;KAClC,CAAC;GACS,cAAc,CAAG;AAAjB,wCAAc"}

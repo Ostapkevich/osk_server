@@ -15,7 +15,9 @@ export class DrawingsController {
             let sqlMaterials = '';
             let sqlDrawings = ''
             if (+typeBlank !== 0) {
-                sqlDrawings = `INSERT INTO osk.drawings (idDrawing, numberDrawing, isp, nameDrawing, weight, type_blank, has_material, L, d_b, h, s, path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), isp=VALUES(isp), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), type_blank=VALUES(type_blank), has_material=VALUES(has_material), L=VALUES(L), d_b=VALUES(d_b), h=VALUES(h), s=VALUES(s), path=VALUES(path);`;
+                // sqlDrawings = `INSERT INTO osk.drawings (idDrawing, numberDrawing, isp, nameDrawing, weight, type_blank, has_material, L, d_b, h, s, path, isDetail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), isp=VALUES(isp), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), type_blank=VALUES(type_blank), has_material=VALUES(has_material), L=VALUES(L), d_b=VALUES(d_b), h=VALUES(h), s=VALUES(s), path=VALUES(path), isDetail=VALUES(isDetail);`;
+
+                sqlDrawings = `INSERT INTO osk.drawings (idDrawing, numberDrawing, isp, nameDrawing, weight, type_blank, has_material, L, d_b, h, s, path, isDetail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
                 if (+typeBlank === 1) {
                     sqlBlank = `INSERT INTO osk.drawing_blank_rolled (id, idDrawing, id_item, value) VALUES (?,?, ?, ?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item), value=VALUES(value);`;
                 } else if (+typeBlank === 2) {
@@ -40,6 +42,7 @@ export class DrawingsController {
                     }
                 } else {
                     const result: any = await this.appService.execute(sqlDrawings, bodyData.drawing);
+                    console.log(result)
                     const newDrawingId = result[0]?.insertId;
                     if (bodyData.materials) {
                         for (let i = 0; i < bodyData.materials.length / 6; i++) {
@@ -58,15 +61,22 @@ export class DrawingsController {
             return { response: 'ok' }
         } catch (error) {
             console.log(error)
-            return { serverError: error.message };
+            if (error.code='ER_DUP_ENTRY') {
+                return { serverError: 'Чертеж с таким номером уже существует!' };
+            } else {
+                return { serverError: error.message };
+            }
+           
         }
     }
 
     @Get('scan')
-    async scan() {
+     scan() {
         try {
-            const data = await this.scanService.scanAllStaticResources(path.join(__dirname, '../..', 'drawings'))
-            return { scan: data }
+            console.log('dirNm ',__dirname)
+           const data:string[] =  this.scanService.scanAllStaticResources(path.join(__dirname, '../..', 'drawings'))
+          console.log(data)
+            return { scan: data.map(path=> path.slice(__dirname.length-19)) }
         } catch (error) {
 
             return { serverError: error.message };

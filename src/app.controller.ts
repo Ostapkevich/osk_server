@@ -9,7 +9,7 @@ export class AppController {
   constructor() {}
 
   @Get('/')
-  getHello(@Res() response: Response): void {
+  returnAppClient(@Res() response: Response): void {
     return response.sendFile(join(__dirname, '../oskmanager', 'index.html'));
   }
 }

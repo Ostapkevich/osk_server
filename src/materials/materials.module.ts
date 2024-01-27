@@ -6,6 +6,7 @@ import { AppService } from 'src/app.service';
 import { PurchasedController } from './purchased.controller';
 import { TypeMaterialsController } from './type-materials.controller';
 
+
 @Module({
   controllers: [RolledController, HardwareController, MaterailsController, PurchasedController, TypeMaterialsController],
   providers: [AppService]
