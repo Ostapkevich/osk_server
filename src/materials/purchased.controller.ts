@@ -11,7 +11,7 @@ constructor(protected appService: AppService){}
 async onLoad() {
   try {
     const material_type = `SELECT id_type, name_type, ind FROM purchased_type ORDER BY ind;`;
-    const materials = `SELECT id_item, name_item, x1, x2, percent FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type ORDER BY purchased_type.ind, x1, x2 LIMIT 0,20;`
+    const materials = `SELECT id_item, name_item, x1, x2, weight FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type ORDER BY purchased_type.ind, x1, x2 LIMIT 0,20;`
     const data = await this.appService.query(material_type, materials);
     return { material_type: data[0][0], materials: data[1][0] };
   } catch (error) {
@@ -47,15 +47,15 @@ async loadRolled(@Param('materialtype') materialtype: number, @Param('position')
     let sql: string;
     if (+materialtype === -1) {
       if (str.length > 0) {
-        sql = `SELECT id_item, name_item, x1, x2, percent FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type WHERE ${str} ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
+        sql = `SELECT id_item, name_item, x1, x2, weight FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type WHERE ${str} ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
       } else {
-        sql = `SELECT id_item, name_item, x1, x2, percent FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
+        sql = `SELECT id_item, name_item, x1, x2, weight FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
       }
     } else {
       if (str.length > 0) {
-        sql = `SELECT id_item, name_item, x1, x2, percent FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type WHERE purchased.id_type=${materialtype} AND ${str} ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
+        sql = `SELECT id_item, name_item, x1, x2, weight FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type WHERE purchased.id_type=${materialtype} AND ${str} ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
       } else {
-        sql = `SELECT id_item, name_item, x1, x2, percent FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type  WHERE purchased.id_type=${materialtype}  ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
+        sql = `SELECT id_item, name_item, x1, x2, weight FROM purchased JOIN purchased_type ON purchased.id_type=purchased_type.id_type  WHERE purchased.id_type=${materialtype}  ORDER BY purchased_type.ind, x1, x2 LIMIT ${position},20;`
       }
     }
 
@@ -78,7 +78,7 @@ async createRolled(@Body() bodyData) {
         arrData.push(param);
       }
     }
-    strInsertData = `INSERT purchased (id_type, name_item, x1, x2, percent) VALUES (?,?,?,?,?)`;
+    strInsertData = `INSERT purchased (id_type, name_item, x1, x2, weight) VALUES (?,?,?,?,?)`;
     const insertMain = await this.appService.execute(strInsertData, arrData);
     if (insertMain[0]['affectedRows'] === 1) {
       return { response: 'ok' };
@@ -99,7 +99,7 @@ async updateRolled(@Body() bodyData) {
         arrData.push(param);
       }
     }
-    const strUpdateData = `UPDATE purchased SET name_item=?, x1=?, x2=?, percent=? WHERE id_item=?`;
+    const strUpdateData = `UPDATE purchased SET name_item=?, x1=?, x2=?, weight=? WHERE id_item=?`;
     const data = await this.appService.execute(strUpdateData, arrData);
     if (data[0]['affectedRows'] === 1) {
       return { response: 'ok' };

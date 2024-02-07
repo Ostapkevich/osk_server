@@ -21,11 +21,9 @@ let ViewDrawingsController = class ViewDrawingsController {
     }
     async viewDrawings(searchParams) {
         try {
-            console.log('dirNm ', __dirname);
             const params = [];
-            let sqlDrawings = `SELECT idDrawing, numberDrawing, isp, nameDrawing, weight, path FROM drawings WHERE 1=1`;
+            let sqlDrawings = `SELECT idDrawing AS id_item, numberDrawing AS number_item, nameDrawing AS name_item, weight, path FROM drawings WHERE 1=1`;
             if (searchParams.idDrawing) {
-                console.log(searchParams.idDrawing);
                 sqlDrawings += " AND " + 'idDrawing=?';
                 params.push(searchParams.idDrawing);
             }
@@ -46,9 +44,11 @@ let ViewDrawingsController = class ViewDrawingsController {
                 params.push(searchParams.max);
             }
             const data = await this.appService.execute(sqlDrawings, params);
+            console.log(data[0]);
             return { drawings: data[0] };
         }
         catch (error) {
+            console.log(error);
             return { serverError: error.message };
         }
     }
