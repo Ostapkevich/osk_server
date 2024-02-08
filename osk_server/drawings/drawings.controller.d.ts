@@ -26,18 +26,31 @@ export declare class DrawingsController {
         response?: undefined;
     }>;
     findByID(id: number): Promise<{
-        info: any;
+        drawing: any;
+        blank: any;
         serverError?: undefined;
     } | {
         serverError: any;
-        info?: undefined;
+        drawing?: undefined;
+        blank?: undefined;
     }>;
-    findByNumber(number: string): Promise<{
-        info: any;
+    findByNumber(drawingNumber: string): Promise<{
+        drawing: any;
+        blank: any;
         serverError?: undefined;
     } | {
         serverError: any;
-        info?: undefined;
+        drawing?: undefined;
+        blank?: undefined;
+    }>;
+    findBy(partOfSql: string): Promise<{
+        drawing: any;
+        blank: any;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        drawing?: undefined;
+        blank?: undefined;
     }>;
     scan(): {
         scan: string[];
