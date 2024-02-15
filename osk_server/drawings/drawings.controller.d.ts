@@ -18,6 +18,13 @@ export declare class DrawingsController {
         serverError: any;
         response?: undefined;
     }>;
+    deleteBlank(typeBlank: number, id: number, idDrawing: number, newTypeBlank: number): Promise<{
+        response: string;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        response?: undefined;
+    }>;
     saveUnits(typeBlank: string, bodyData: any): Promise<{
         response: string;
         serverError?: undefined;

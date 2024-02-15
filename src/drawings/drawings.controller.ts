@@ -1,4 +1,4 @@
-import { Controller, Put, Body, Param, Post, Get } from '@nestjs/common';
+import { Controller, Put, Body, Param, Post, Get, Delete } from '@nestjs/common';
 import { AppService } from 'src/app.service';
 import { ScanService } from 'src/drawings/scan.service';
 import * as path from 'path';
@@ -30,18 +30,44 @@ export class DrawingsController {
             if (+typeBlank === 1) {
                 sqlBlank = `INSERT INTO osk.drawing_blank_rolled (id, idDrawing, id_item, L, d_b, h, plasma, allowance) VALUES (?,?, ?, ?, ?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), allowance=VALUES(allowance);`;
             } else if (+typeBlank === 2) {
-                sqlBlank = `INSERT INTO osk.drawing_blank_hardware (id, idDrawing, id_item) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), id_item=VALUES(idDrawing) id_item=VALUES(id_item);`;
+                sqlBlank = `INSERT INTO osk.drawing_blank_hardware (id, idDrawing, id_item) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item);`;
             } else if (+typeBlank === 3) {
-                sqlBlank = `INSERT INTO osk.drawing_blank_material (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?, ?, ?, ?, ?,?,?) ON DUPLICATE KEY UPDATEid=VALUES(id),id_item=VALUES(idDrawing), id_item=VALUES(id_item), percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h);`;
+                sqlBlank = `INSERT INTO osk.drawing_blank_material (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?, ?, ?, ?, ?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h);`;
             } else if (+typeBlank === 4) {
-                sqlBlank = `INSERT INTO osk.drawing_blank_purshased (id, idDrawing  , id_item) VALUES (?,?, ?) ON DUPLICATE KEY UPDATE id=VALUES(id), id_item=VALUES(idDrawing) id_item=VALUES(id_item);`;
+                sqlBlank = `INSERT INTO osk.drawing_blank_purshased (id, idDrawing, id_item) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item);`;
             }
             const data: any = await this.appService.execute(sqlBlank, bodyData);
             return { response: data[0].insertId };
         } catch (error) {
-            console.log(error)
-            return { serverError: error.message };
 
+            return { serverError: error.message };
+        }
+    }
+
+    @Delete('deleteBlank/:typeBlank/:id/:idDrawing/:newTypeBlank')
+    async deleteBlank(@Param('typeBlank') typeBlank: number, @Param('id') id: number, @Param('idDrawing') idDrawing: number, @Param('newTypeBlank') newTypeBlank: number) {
+        try {
+            let oldTable = '';
+            switch (+typeBlank) {
+                case 1:
+                    oldTable = 'drawing_blank_rolled'
+                    break;
+                case 2:
+                    oldTable = 'drawing_blank_hardware'
+                    break;
+                case 3:
+                    oldTable = 'drawing_blank_material'
+                    break;
+                case 4:
+                    oldTable = 'drawing_blank_purshased'
+                    break;
+            }
+            const data: any = await this.appService.query(`DELETE FROM ${oldTable} WHERE id=${id}`, `UPDATE drawings SET type_blank = ${newTypeBlank} WHERE idDrawing=${idDrawing} `);
+            if (data[0][0].affectedRows && data[1][0].affectedRows) {
+                return { response: 'ok' };
+            }
+        } catch (error) {
+            return { serverError: error.message };
         }
     }
 
@@ -66,7 +92,7 @@ export class DrawingsController {
             } else if (+typeBlank === 2) {
                 sqlBlank = `INSERT INTO osk.drawing_blank_hardware (id, idDrawing, id_item, value) VALUES (?,?, ?, ?) ON DUPLICATE KEY UPDATE id=VALUES(id), id_item=VALUES(idDrawing) id_item=VALUES(id_item);`;
             } else if (+typeBlank === 3) {
-                sqlBlank = `INSERT INTO osk.drawing_blank_material (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?, ?, ?, ?, ?,?,?) ON DUPLICATE KEY UPDATEid=VALUES(id),id_item=VALUES(idDrawing), id_item=VALUES(id_item), percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h);`;
+                sqlBlank = `INSERT INTO osk.drawing_blank_material (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?, ?, ?, ?, ?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id),id_item=VALUES(idDrawing), id_item=VALUES(id_item), percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h);`;
             } else if (+typeBlank === 4) {
                 sqlBlank = `INSERT INTO osk.drawing_blank_purshased (id, idDrawing  , id_item) VALUES (?,?, ?, ?) ON DUPLICATE KEY UPDATE id=VALUES(id), id_item=VALUES(idDrawing) id_item=VALUES(id_item);`;
             }
@@ -118,7 +144,7 @@ export class DrawingsController {
                     drawSp = `INSERT INTO osk.spdrawing (idSpecification, idDrawing) VALUES ${hardwareSp};`;
                 }
             }
-            console.log(bodyData)
+
             if (bodyData.drawing[0] !== null) {
                 const dataParams = [];
                 let sql: string[] = [];
@@ -135,7 +161,6 @@ export class DrawingsController {
                 const data = this.appService.executeMultiple(dataParams, ...sql)
             } else {
                 const result: any = await this.appService.execute(sqlDrawings, bodyData.drawing);
-                console.log(result)
                 const newDrawingId = result[0]?.insertId;
                 if (bodyData.materials) {
                     for (let i = 0; i < bodyData.materials.length / 8; i++) {
@@ -143,7 +168,6 @@ export class DrawingsController {
                     }
                     bodyData.blank[1] = newDrawingId;
                     bodyData.materials[1] = result[0].insertId;
-                    console.log('изм ', bodyData.materials)
                     await this.appService.executeMultiple([bodyData.blank, bodyData.materials], sqlBlank, sqlMaterials);
                 } else {
                     bodyData.blank[1] = newDrawingId;
@@ -152,7 +176,6 @@ export class DrawingsController {
             }
             return { response: 'ok' }
         } catch (error) {
-            console.log(error)
             if (error.code === 'ER_DUP_ENTRY') {
                 return { serverError: 'Чертеж с таким номером уже существует!' };
             } else {
@@ -193,7 +216,7 @@ export class DrawingsController {
             let dataMaterial: any = undefined;
             let dataSP: any = undefined;
 
-            if (dataDrawing[0][0][0].type_blank) {
+            if (dataDrawing[0][0][0]?.type_blank) {
                 const typeBlank: number = dataDrawing[0][0][0].type_blank;
                 let sqlBlank = '';
                 switch (typeBlank) {
@@ -203,28 +226,28 @@ export class DrawingsController {
                         INNER JOIN rolled_type ON rolled.id_type=rolled_type.id_type
                        WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
                         break;
+                    case 2:
+                        sqlBlank = `SELECT id, drawing_blank_hardware.id_item, hardware.name_item, hardware.weight FROM drawing_blank_hardware
+                        INNER JOIN hardware ON drawing_blank_hardware.id_item=hardware.id_item
+                        WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
+                        break;
+                    case 3:
+                        sqlBlank = `SELECT id, drawing_blank_material.id_item, drawing_blank_material.percent, drawing_blank_material.value, drawing_blank_material.specific_units, L, h, material.name_item, material.units  FROM drawing_blank_material
+                            INNER JOIN material ON drawing_blank_material.id_item=material.id_item
+                            WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
+                        break;
+                    case 4:
+                        sqlBlank = `SELECT id, drawing_blank_purshased.id_item, purchased.name_item, purchased.weight FROM drawing_blank_purshased
+                            INNER JOIN purchased ON drawing_blank_purshased.id_item=purchased.id_item
+                            WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
+                        break;
                 }
-                const sqlBla = ` CASE
-                    WHEN type_blank = 1 THEN
-                        (SELECT CONCAT(drawing_blank_rolled.id, ',', drawing_blank_rolled.id_item, ',', drawing_blank_rolled.plasma, ',', drawing_blank_rolled.L, ',', drawing_blank_rolled.d_b, ',', drawing_blank_rolled.h, ',', rolled.name_item, ',', rolled.weight, ',', rolled_type.uselength)
-                        FROM drawing_blank_rolled INNER JOIN rolled ON drawing_blank_rolled.id_item = rolled.id_item 
-                        INNER JOIN rolled_type ON rolled.id_type = rolled_type.id_type WHERE drawing_blank_rolled.idDrawing = 1 )
-                    WHEN type_blank = 2 THEN
-                        (SELECT CONCAT(drawing_blank_hardware.id, ',', drawing_blank_hardware.id_item)
-                        FROM drawing_blank_hardware)
-                    WHEN type_blank = 3 THEN
-                        (SELECT CONCAT(drawing_blank_material.id, ',', drawing_blank_material.id_item, ',', drawing_blank_material.percent, ',', drawing_blank_material.value, ',', drawing_blank_material.specific_units, ',', drawing_blank_material.L, ',', drawing_blank_material.h)
-                        FROM drawing_blank_material)
-                    ELSE
-                        (SELECT CONCAT(drawing_blank_purshased.id, ',', drawing_blank_purshased.id_item)
-                        FROM drawing_blank_purshased)
-                END AS result
-            FROM osk.drawings
-            WHERE idDrawing = 1;`;
+
                 dataBlank = await this.appService.query(sqlBlank);
             }
-          
-            return { drawing: dataDrawing[0][0][0], blank: dataBlank[0][0][0] };
+           /*  console.log('dataDrawing',dataDrawing[0][0][0])
+            console.log('dataBlank',dataBlank[0][0][0]) */
+            return { drawing: dataDrawing?dataDrawing[0][0][0]:undefined , blank: dataBlank?dataBlank[0][0][0]:undefined };
         } catch (error) {
             console.log(error)
             return { serverError: error.message };
