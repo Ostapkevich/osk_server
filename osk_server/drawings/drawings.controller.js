@@ -24,8 +24,10 @@ let DrawingsController = class DrawingsController {
     }
     async saveDrawing(bodyData) {
         try {
-            const sqlDrawing = `INSERT INTO osk.drawings (idDrawing, numberDrawing, nameDrawing, weight, s, path) VALUES ( ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), path=VALUES(path) ;`;
+            const sqlDrawing = `INSERT INTO osk.drawings (idDrawing, numberDrawing, nameDrawing, weight, s, path) VALUES ( ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), s=VALUES(s), path=VALUES(path) ;`;
             const data = await this.appService.execute(sqlDrawing, bodyData);
+            console.log(bodyData);
+            console.log(data);
             return { response: data[0].insertId };
         }
         catch (error) {
@@ -53,7 +55,7 @@ let DrawingsController = class DrawingsController {
                 sqlBlank = `INSERT INTO osk.drawing_blank_purshased (id, idDrawing, id_item) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item);`;
             }
             const data = await this.appService.execute(sqlBlank, bodyData);
-            return { response: data[0].insertId };
+            return { id: data[0].insertId };
         }
         catch (error) {
             return { serverError: error.message };
@@ -85,7 +87,7 @@ let DrawingsController = class DrawingsController {
             return { serverError: error.message };
         }
     }
-    async saveUnits(typeBlank, bodyData) {
+    async saveAll(typeBlank, bodyData) {
         var _a;
         try {
             let sqlBlank = '';
@@ -198,6 +200,16 @@ let DrawingsController = class DrawingsController {
             }
         }
     }
+    async addMaterial(bodyData) {
+        try {
+            const sqlMaterial = `INSERT INTO drawing_materials (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?,?,?,?,?,?,?);`;
+            const data = await this.appService.execute(sqlMaterial, bodyData);
+            return { id: data[0].insertId };
+        }
+        catch (error) {
+            return { serverError: error.message };
+        }
+    }
     async findByID(id) {
         try {
             return this.findBy(`idDrawing=${id}`);
@@ -220,7 +232,6 @@ let DrawingsController = class DrawingsController {
             const sqlDrawing = `SELECT idDrawing, numberDrawing, nameDrawing, weight, type_blank, s, path FROM osk.drawings WHERE ${partOfSql};`;
             const dataDrawing = await this.appService.query(sqlDrawing);
             let dataBlank = undefined;
-            let dataMaterial = undefined;
             let dataSP = undefined;
             if ((_a = dataDrawing[0][0][0]) === null || _a === void 0 ? void 0 : _a.type_blank) {
                 const typeBlank = dataDrawing[0][0][0].type_blank;
@@ -250,7 +261,11 @@ let DrawingsController = class DrawingsController {
                 }
                 dataBlank = await this.appService.query(sqlBlank);
             }
-            return { drawing: dataDrawing ? dataDrawing[0][0][0] : undefined, blank: dataBlank ? dataBlank[0][0][0] : undefined };
+            const sqlMaterial = `SELECT drawing_materials.id, drawing_materials.idDrawing, drawing_materials.id_item, material.name_item, material.units, drawing_materials.percent, drawing_materials.value, drawing_materials.specific_units, drawing_materials.L, drawing_materials.h
+           FROM drawing_materials INNER JOIN material ON drawing_materials.id_item=material.id_item WHERE drawing_materials.idDrawing=${dataDrawing[0][0][0].idDrawing}`;
+            const dataMaterial = await this.appService.query(sqlMaterial);
+            console.log(dataMaterial[0][0][0]);
+            return { drawing: dataDrawing ? dataDrawing[0][0][0] : undefined, blank: dataBlank ? dataBlank[0][0][0] : undefined, materials: dataMaterial ? dataMaterial[0][0] : undefined };
         }
         catch (error) {
             console.log(error);
@@ -299,7 +314,14 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "saveUnits", null);
+], DrawingsController.prototype, "saveAll", null);
+__decorate([
+    (0, common_1.Post)('addMaterial'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], DrawingsController.prototype, "addMaterial", null);
 __decorate([
     (0, common_1.Get)('findByID/:id'),
     __param(0, (0, common_1.Param)('id')),

@@ -12,11 +12,11 @@ export declare class DrawingsController {
         response?: undefined;
     }>;
     saveBlank(typeBlank: number, bodyData: any): Promise<{
-        response: any;
+        id: any;
         serverError?: undefined;
     } | {
         serverError: any;
-        response?: undefined;
+        id?: undefined;
     }>;
     deleteBlank(typeBlank: number, id: number, idDrawing: number, newTypeBlank: number): Promise<{
         response: string;
@@ -25,39 +25,52 @@ export declare class DrawingsController {
         serverError: any;
         response?: undefined;
     }>;
-    saveUnits(typeBlank: string, bodyData: any): Promise<{
+    saveAll(typeBlank: string, bodyData: any): Promise<{
         response: string;
         serverError?: undefined;
     } | {
         serverError: any;
         response?: undefined;
     }>;
+    addMaterial(bodyData: any): Promise<{
+        id: any;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        id?: undefined;
+    }>;
     findByID(id: number): Promise<{
         drawing: any;
         blank: any;
+        materials: any;
         serverError?: undefined;
     } | {
         serverError: any;
         drawing?: undefined;
         blank?: undefined;
+        materials?: undefined;
     }>;
     findByNumber(drawingNumber: string): Promise<{
         drawing: any;
         blank: any;
+        materials: any;
         serverError?: undefined;
     } | {
         serverError: any;
         drawing?: undefined;
         blank?: undefined;
+        materials?: undefined;
     }>;
     findBy(partOfSql: string): Promise<{
         drawing: any;
         blank: any;
+        materials: any;
         serverError?: undefined;
     } | {
         serverError: any;
         drawing?: undefined;
         blank?: undefined;
+        materials?: undefined;
     }>;
     scan(): {
         scan: string[];

@@ -11,8 +11,10 @@ export class DrawingsController {
     async saveDrawing(@Body() bodyData) {
         try {
             // sqlDrawings = `INSERT INTO osk.drawings (idDrawing, numberDrawing, isp, nameDrawing, weight, type_blank, has_material, L, d_b, h, s, path, isDetail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), isp=VALUES(isp), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), type_blank=VALUES(type_blank), has_material=VALUES(has_material), L=VALUES(L), d_b=VALUES(d_b), h=VALUES(h), s=VALUES(s), path=VALUES(path), isDetail=VALUES(isDetail);`;
-            const sqlDrawing = `INSERT INTO osk.drawings (idDrawing, numberDrawing, nameDrawing, weight, s, path) VALUES ( ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), path=VALUES(path) ;`;
+            const sqlDrawing = `INSERT INTO osk.drawings (idDrawing, numberDrawing, nameDrawing, weight, s, path) VALUES ( ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), s=VALUES(s), path=VALUES(path) ;`;
             const data: any = await this.appService.execute(sqlDrawing, bodyData);
+            console.log(bodyData)
+            console.log(data)
             return { response: data[0].insertId };
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -37,7 +39,7 @@ export class DrawingsController {
                 sqlBlank = `INSERT INTO osk.drawing_blank_purshased (id, idDrawing, id_item) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item);`;
             }
             const data: any = await this.appService.execute(sqlBlank, bodyData);
-            return { response: data[0].insertId };
+            return { id: data[0].insertId };
         } catch (error) {
 
             return { serverError: error.message };
@@ -73,7 +75,7 @@ export class DrawingsController {
 
 
     @Post('save/:typeBlank')
-    async saveUnits(@Param('typeBlank') typeBlank: string,
+    async saveAll(@Param('typeBlank') typeBlank: string,
         @Body() bodyData) {
         try {
             let sqlBlank = '';
@@ -185,6 +187,16 @@ export class DrawingsController {
         }
     }
 
+    @Post('addMaterial')
+    async addMaterial(@Body() bodyData) {
+        try {
+            const sqlMaterial = `INSERT INTO drawing_materials (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?,?,?,?,?,?,?);`;
+            const data: any = await this.appService.execute(sqlMaterial, bodyData);
+            return { id: data[0].insertId };
+        } catch (error) {
+            return { serverError: error.message };
+        }
+    }
 
     @Get('findByID/:id')
     async findByID(@Param('id') id: number) {
@@ -194,7 +206,6 @@ export class DrawingsController {
             return { serverError: error.message };
         }
     }
-
 
     @Get('findByNumber/:number')
     async findByNumber(@Param('number') drawingNumber: string) {
@@ -213,7 +224,7 @@ export class DrawingsController {
             const dataDrawing: any = await this.appService.query(sqlDrawing);
 
             let dataBlank: any = undefined;
-            let dataMaterial: any = undefined;
+           
             let dataSP: any = undefined;
 
             if (dataDrawing[0][0][0]?.type_blank) {
@@ -245,15 +256,29 @@ export class DrawingsController {
 
                 dataBlank = await this.appService.query(sqlBlank);
             }
-           /*  console.log('dataDrawing',dataDrawing[0][0][0])
-            console.log('dataBlank',dataBlank[0][0][0]) */
-            return { drawing: dataDrawing?dataDrawing[0][0][0]:undefined , blank: dataBlank?dataBlank[0][0][0]:undefined };
+          /*   this.materials.push({
+                id: id,
+                idDrawing: idDrawing!,
+                idItem: this.idMaterial!,
+                name_material: this.nameMaterial!,
+                unitsMaterial: this.unitsMaterial!,
+                percentMaterial: percentMaterial,
+                valueMaterial: valueMaterial,
+                specific_unitsMaterial: this.specificUnitsMaterial!,
+                lenMaterial: this.lenMaterial || null,
+                //dw: this.dwMaterial || null,
+                hMaterial: this.hMaterial || null,
+              }) */
+           const sqlMaterial=`SELECT drawing_materials.id, drawing_materials.idDrawing, drawing_materials.id_item, material.name_item, material.units, drawing_materials.percent, drawing_materials.value, drawing_materials.specific_units, drawing_materials.L, drawing_materials.h
+           FROM drawing_materials INNER JOIN material ON drawing_materials.id_item=material.id_item WHERE drawing_materials.idDrawing=${dataDrawing[0][0][0].idDrawing}`;
+           const dataMaterial: any = await this.appService.query(sqlMaterial) ;
+           console.log(dataMaterial[0][0][0])
+            return { drawing: dataDrawing ? dataDrawing[0][0][0] : undefined, blank: dataBlank ? dataBlank[0][0][0] : undefined,materials: dataMaterial? dataMaterial[0][0]:undefined};
         } catch (error) {
             console.log(error)
             return { serverError: error.message };
         }
     }
-
 
     @Get('scan')
     scan() {
