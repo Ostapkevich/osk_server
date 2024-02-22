@@ -2,10 +2,11 @@ import { Controller, Put, Body, Param, Post, Get, Delete } from '@nestjs/common'
 import { AppService } from 'src/app.service';
 import { ScanService } from 'src/drawings/scan.service';
 import * as path from 'path';
+import { DrawingService } from './drawing.service';
 
 @Controller('drawings')
-export class DrawingsController {
-    constructor(protected appService: AppService, private scanService: ScanService) { }
+export class CreateDrawingsController {
+    constructor(protected appService: AppService, private scanService: ScanService, private dravingSerice: DrawingService) { }
 
     @Post('saveDrawing')
     async saveDrawing(@Body() bodyData) {
@@ -46,6 +47,7 @@ export class DrawingsController {
         }
     }
 
+
     @Delete('deleteBlank/:typeBlank/:id/:idDrawing/:newTypeBlank')
     async deleteBlank(@Param('typeBlank') typeBlank: number, @Param('id') id: number, @Param('idDrawing') idDrawing: number, @Param('newTypeBlank') newTypeBlank: number) {
         try {
@@ -69,6 +71,51 @@ export class DrawingsController {
                 return { response: 'ok' };
             }
         } catch (error) {
+            return { serverError: error.message };
+        }
+    }
+
+    @Delete('deleteMaterial/:id')
+    async deleteMaterial(@Param('id')id: number) {
+        try {
+           const data: any = await this.appService.query(`DELETE FROM drawing_materials WHERE id=${id}`);
+           console.log(data)
+            if (data[0][0].affectedRows && data[0][0].affectedRows) {
+                return { response: 'ok' };
+            }
+        } catch (error) {
+            return { serverError: error.message };
+        }
+    }
+
+    @Post('addPositionSP')
+    async addPositionSP(@Body() bodyData: any) {
+        try {
+            console.log('bodyData ', bodyData)
+            let data: any = await this.appService.execute(`INSERT INTO drawing_specification (ind, idDrawing, type_position, quantity) VALUES (?,?,?,?)`, bodyData.dataSP);
+            console.log('dataDetails befor ',bodyData.dataDetails)
+            const idParent: number = data[0].insertId;
+            bodyData.dataDetails.push(idParent);
+            console.log('dataDetails after ',bodyData.dataDetails)
+            let sqlPosition = '';
+            const typePosition = bodyData.dataSP[2];
+            if (typePosition === 1) {
+                sqlPosition = `INSERT INTO osk.sprolled (id_sprolled, id_item, L, d_b, h, plasma, name, id) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_sprolled=VALUES(id_sprolled), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), name=VALUES(name), id=VALUES(id);`;
+            } else if (typePosition === 2) {
+                sqlPosition = `INSERT INTO osk.sphardware (id_sphardware, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sphardware=VALUES(id_sphardware), id_item=VALUES(id_item, name=VALUES(name), id=VALUES(id);`;
+            } else if (typePosition === 3) {
+                sqlPosition = `INSERT INTO osk.spmaterial (id_spmaterial, id_item, percent, value, specific_units, L, h, name, id) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_spmaterial=VALUES(id_spmaterial), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h), name=values(name), id=VALUES(id);`;
+            } else if (typePosition === 4) {
+                sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
+            } else {
+                sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
+
+            }
+          
+            data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
+            return { idParent: idParent, id: data[0].insertId };
+        } catch (error) {
+            console.log(error)
             return { serverError: error.message };
         }
     }
@@ -198,10 +245,12 @@ export class DrawingsController {
         }
     }
 
+
+
     @Get('findByID/:id')
     async findByID(@Param('id') id: number) {
         try {
-            return this.findBy(`idDrawing=${id}`);
+            return this.dravingSerice.findBy(`idDrawing=${id}`);
         } catch (error) {
             return { serverError: error.message };
         }
@@ -210,75 +259,13 @@ export class DrawingsController {
     @Get('findByNumber/:number')
     async findByNumber(@Param('number') drawingNumber: string) {
         try {
-            // const sql = `SELECT idDrawing, numberDrawing, nameDrawing, weight,type_blank< s, path FROM osk.drawings WHERE numberDrawing='${number}';`;
-
-            return this.findBy(`numberDrawing='${drawingNumber}'`);
+            return this.dravingSerice.findBy(`numberDrawing='${drawingNumber}'`);
         } catch (error) {
             return { serverError: error.message };
         }
     }
 
-    async findBy(partOfSql: string) {
-        try {
-            const sqlDrawing = `SELECT idDrawing, numberDrawing, nameDrawing, weight, type_blank, s, path FROM osk.drawings WHERE ${partOfSql};`
-            const dataDrawing: any = await this.appService.query(sqlDrawing);
 
-            let dataBlank: any = undefined;
-           
-            let dataSP: any = undefined;
-
-            if (dataDrawing[0][0][0]?.type_blank) {
-                const typeBlank: number = dataDrawing[0][0][0].type_blank;
-                let sqlBlank = '';
-                switch (typeBlank) {
-                    case 1:
-                        sqlBlank = `SELECT id, drawing_blank_rolled.id_item, plasma, L, d_b, h, allowance, rolled.name_item, rolled.weight, rolled.d, rolled.t, rolled_type.uselength  FROM drawing_blank_rolled
-                        INNER JOIN rolled ON rolled.id_item=drawing_blank_rolled.id_item
-                        INNER JOIN rolled_type ON rolled.id_type=rolled_type.id_type
-                       WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                    case 2:
-                        sqlBlank = `SELECT id, drawing_blank_hardware.id_item, hardware.name_item, hardware.weight FROM drawing_blank_hardware
-                        INNER JOIN hardware ON drawing_blank_hardware.id_item=hardware.id_item
-                        WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                    case 3:
-                        sqlBlank = `SELECT id, drawing_blank_material.id_item, drawing_blank_material.percent, drawing_blank_material.value, drawing_blank_material.specific_units, L, h, material.name_item, material.units  FROM drawing_blank_material
-                            INNER JOIN material ON drawing_blank_material.id_item=material.id_item
-                            WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                    case 4:
-                        sqlBlank = `SELECT id, drawing_blank_purshased.id_item, purchased.name_item, purchased.weight FROM drawing_blank_purshased
-                            INNER JOIN purchased ON drawing_blank_purshased.id_item=purchased.id_item
-                            WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                }
-
-                dataBlank = await this.appService.query(sqlBlank);
-            }
-          /*   this.materials.push({
-                id: id,
-                idDrawing: idDrawing!,
-                idItem: this.idMaterial!,
-                name_material: this.nameMaterial!,
-                unitsMaterial: this.unitsMaterial!,
-                percentMaterial: percentMaterial,
-                valueMaterial: valueMaterial,
-                specific_unitsMaterial: this.specificUnitsMaterial!,
-                lenMaterial: this.lenMaterial || null,
-                //dw: this.dwMaterial || null,
-                hMaterial: this.hMaterial || null,
-              }) */
-           const sqlMaterial=`SELECT drawing_materials.id, drawing_materials.idDrawing, drawing_materials.id_item, material.name_item, material.units, drawing_materials.percent, drawing_materials.value, drawing_materials.specific_units, drawing_materials.L, drawing_materials.h
-           FROM drawing_materials INNER JOIN material ON drawing_materials.id_item=material.id_item WHERE drawing_materials.idDrawing=${dataDrawing[0][0][0].idDrawing}`;
-           const dataMaterial: any = await this.appService.query(sqlMaterial) ;
-           console.log(dataMaterial[0][0][0])
-            return { drawing: dataDrawing ? dataDrawing[0][0][0] : undefined, blank: dataBlank ? dataBlank[0][0][0] : undefined,materials: dataMaterial? dataMaterial[0][0]:undefined};
-        } catch (error) {
-            console.log(error)
-            return { serverError: error.message };
-        }
-    }
 
     @Get('scan')
     scan() {

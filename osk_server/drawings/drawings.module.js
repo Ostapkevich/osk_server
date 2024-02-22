@@ -9,14 +9,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DrawingsModule = void 0;
 const common_1 = require("@nestjs/common");
 const scan_service_1 = require("./scan.service");
-const drawings_controller_1 = require("./drawings.controller");
+const createDrawings_controller_1 = require("./createDrawings.controller");
 const app_service_1 = require("../app.service");
+const view_drawings_controller_1 = require("./view-drawings.controller");
+const drawing_service_1 = require("./drawing.service");
 let DrawingsModule = class DrawingsModule {
 };
 DrawingsModule = __decorate([
     (0, common_1.Module)({
-        providers: [app_service_1.AppService, scan_service_1.ScanService],
-        controllers: [drawings_controller_1.DrawingsController]
+        providers: [app_service_1.AppService, scan_service_1.ScanService, drawing_service_1.DrawingService],
+        controllers: [createDrawings_controller_1.CreateDrawingsController, view_drawings_controller_1.ViewDrawingsController]
     })
 ], DrawingsModule);
 exports.DrawingsModule = DrawingsModule;

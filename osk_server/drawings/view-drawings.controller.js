@@ -44,7 +44,6 @@ let ViewDrawingsController = class ViewDrawingsController {
                 params.push(searchParams.max);
             }
             const data = await this.appService.execute(sqlDrawings, params);
-            console.log(data[0]);
             return { drawings: data[0] };
         }
         catch (error) {

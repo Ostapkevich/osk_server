@@ -1,9 +1,11 @@
 import { AppService } from 'src/app.service';
 import { ScanService } from 'src/drawings/scan.service';
-export declare class DrawingsController {
+import { DrawingService } from './drawing.service';
+export declare class CreateDrawingsController {
     protected appService: AppService;
     private scanService;
-    constructor(appService: AppService, scanService: ScanService);
+    private dravingSerice;
+    constructor(appService: AppService, scanService: ScanService, dravingSerice: DrawingService);
     saveDrawing(bodyData: any): Promise<{
         response: any;
         serverError?: undefined;
@@ -25,6 +27,22 @@ export declare class DrawingsController {
         serverError: any;
         response?: undefined;
     }>;
+    deleteMaterial(id: number): Promise<{
+        response: string;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        response?: undefined;
+    }>;
+    addPositionSP(bodyData: any): Promise<{
+        idParent: number;
+        id: any;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        idParent?: undefined;
+        id?: undefined;
+    }>;
     saveAll(typeBlank: string, bodyData: any): Promise<{
         response: string;
         serverError?: undefined;
@@ -43,34 +61,27 @@ export declare class DrawingsController {
         drawing: any;
         blank: any;
         materials: any;
+        positionsSP: any[];
         serverError?: undefined;
     } | {
         serverError: any;
         drawing?: undefined;
         blank?: undefined;
         materials?: undefined;
+        positionsSP?: undefined;
     }>;
     findByNumber(drawingNumber: string): Promise<{
         drawing: any;
         blank: any;
         materials: any;
+        positionsSP: any[];
         serverError?: undefined;
     } | {
         serverError: any;
         drawing?: undefined;
         blank?: undefined;
         materials?: undefined;
-    }>;
-    findBy(partOfSql: string): Promise<{
-        drawing: any;
-        blank: any;
-        materials: any;
-        serverError?: undefined;
-    } | {
-        serverError: any;
-        drawing?: undefined;
-        blank?: undefined;
-        materials?: undefined;
+        positionsSP?: undefined;
     }>;
     scan(): {
         scan: string[];

@@ -12,15 +12,17 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DrawingsController = void 0;
+exports.CreateDrawingsController = void 0;
 const common_1 = require("@nestjs/common");
 const app_service_1 = require("../app.service");
 const scan_service_1 = require("./scan.service");
 const path = require("path");
-let DrawingsController = class DrawingsController {
-    constructor(appService, scanService) {
+const drawing_service_1 = require("./drawing.service");
+let CreateDrawingsController = class CreateDrawingsController {
+    constructor(appService, scanService, dravingSerice) {
         this.appService = appService;
         this.scanService = scanService;
+        this.dravingSerice = dravingSerice;
     }
     async saveDrawing(bodyData) {
         try {
@@ -84,6 +86,51 @@ let DrawingsController = class DrawingsController {
             }
         }
         catch (error) {
+            return { serverError: error.message };
+        }
+    }
+    async deleteMaterial(id) {
+        try {
+            const data = await this.appService.query(`DELETE FROM drawing_materials WHERE id=${id}`);
+            console.log(data);
+            if (data[0][0].affectedRows && data[0][0].affectedRows) {
+                return { response: 'ok' };
+            }
+        }
+        catch (error) {
+            return { serverError: error.message };
+        }
+    }
+    async addPositionSP(bodyData) {
+        try {
+            console.log('bodyData ', bodyData);
+            let data = await this.appService.execute(`INSERT INTO drawing_specification (ind, idDrawing, type_position, quantity) VALUES (?,?,?,?)`, bodyData.dataSP);
+            console.log('dataDetails befor ', bodyData.dataDetails);
+            const idParent = data[0].insertId;
+            bodyData.dataDetails.push(idParent);
+            console.log('dataDetails after ', bodyData.dataDetails);
+            let sqlPosition = '';
+            const typePosition = bodyData.dataSP[2];
+            if (typePosition === 1) {
+                sqlPosition = `INSERT INTO osk.sprolled (id_sprolled, id_item, L, d_b, h, plasma, name, id) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_sprolled=VALUES(id_sprolled), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), name=VALUES(name), id=VALUES(id);`;
+            }
+            else if (typePosition === 2) {
+                sqlPosition = `INSERT INTO osk.sphardware (id_sphardware, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sphardware=VALUES(id_sphardware), id_item=VALUES(id_item, name=VALUES(name), id=VALUES(id);`;
+            }
+            else if (typePosition === 3) {
+                sqlPosition = `INSERT INTO osk.spmaterial (id_spmaterial, id_item, percent, value, specific_units, L, h, name, id) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_spmaterial=VALUES(id_spmaterial), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h), name=values(name), id=VALUES(id);`;
+            }
+            else if (typePosition === 4) {
+                sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
+            }
+            else {
+                sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
+            }
+            data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
+            return { idParent: idParent, id: data[0].insertId };
+        }
+        catch (error) {
+            console.log(error);
             return { serverError: error.message };
         }
     }
@@ -212,7 +259,7 @@ let DrawingsController = class DrawingsController {
     }
     async findByID(id) {
         try {
-            return this.findBy(`idDrawing=${id}`);
+            return this.dravingSerice.findBy(`idDrawing=${id}`);
         }
         catch (error) {
             return { serverError: error.message };
@@ -220,55 +267,9 @@ let DrawingsController = class DrawingsController {
     }
     async findByNumber(drawingNumber) {
         try {
-            return this.findBy(`numberDrawing='${drawingNumber}'`);
+            return this.dravingSerice.findBy(`numberDrawing='${drawingNumber}'`);
         }
         catch (error) {
-            return { serverError: error.message };
-        }
-    }
-    async findBy(partOfSql) {
-        var _a;
-        try {
-            const sqlDrawing = `SELECT idDrawing, numberDrawing, nameDrawing, weight, type_blank, s, path FROM osk.drawings WHERE ${partOfSql};`;
-            const dataDrawing = await this.appService.query(sqlDrawing);
-            let dataBlank = undefined;
-            let dataSP = undefined;
-            if ((_a = dataDrawing[0][0][0]) === null || _a === void 0 ? void 0 : _a.type_blank) {
-                const typeBlank = dataDrawing[0][0][0].type_blank;
-                let sqlBlank = '';
-                switch (typeBlank) {
-                    case 1:
-                        sqlBlank = `SELECT id, drawing_blank_rolled.id_item, plasma, L, d_b, h, allowance, rolled.name_item, rolled.weight, rolled.d, rolled.t, rolled_type.uselength  FROM drawing_blank_rolled
-                        INNER JOIN rolled ON rolled.id_item=drawing_blank_rolled.id_item
-                        INNER JOIN rolled_type ON rolled.id_type=rolled_type.id_type
-                       WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                    case 2:
-                        sqlBlank = `SELECT id, drawing_blank_hardware.id_item, hardware.name_item, hardware.weight FROM drawing_blank_hardware
-                        INNER JOIN hardware ON drawing_blank_hardware.id_item=hardware.id_item
-                        WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                    case 3:
-                        sqlBlank = `SELECT id, drawing_blank_material.id_item, drawing_blank_material.percent, drawing_blank_material.value, drawing_blank_material.specific_units, L, h, material.name_item, material.units  FROM drawing_blank_material
-                            INNER JOIN material ON drawing_blank_material.id_item=material.id_item
-                            WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                    case 4:
-                        sqlBlank = `SELECT id, drawing_blank_purshased.id_item, purchased.name_item, purchased.weight FROM drawing_blank_purshased
-                            INNER JOIN purchased ON drawing_blank_purshased.id_item=purchased.id_item
-                            WHERE idDrawing=${dataDrawing[0][0][0].idDrawing};`;
-                        break;
-                }
-                dataBlank = await this.appService.query(sqlBlank);
-            }
-            const sqlMaterial = `SELECT drawing_materials.id, drawing_materials.idDrawing, drawing_materials.id_item, material.name_item, material.units, drawing_materials.percent, drawing_materials.value, drawing_materials.specific_units, drawing_materials.L, drawing_materials.h
-           FROM drawing_materials INNER JOIN material ON drawing_materials.id_item=material.id_item WHERE drawing_materials.idDrawing=${dataDrawing[0][0][0].idDrawing}`;
-            const dataMaterial = await this.appService.query(sqlMaterial);
-            console.log(dataMaterial[0][0][0]);
-            return { drawing: dataDrawing ? dataDrawing[0][0][0] : undefined, blank: dataBlank ? dataBlank[0][0][0] : undefined, materials: dataMaterial ? dataMaterial[0][0] : undefined };
-        }
-        catch (error) {
-            console.log(error);
             return { serverError: error.message };
         }
     }
@@ -288,7 +289,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "saveDrawing", null);
+], CreateDrawingsController.prototype, "saveDrawing", null);
 __decorate([
     (0, common_1.Post)('saveBlank/:typeBlank'),
     __param(0, (0, common_1.Param)('typeBlank')),
@@ -296,7 +297,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "saveBlank", null);
+], CreateDrawingsController.prototype, "saveBlank", null);
 __decorate([
     (0, common_1.Delete)('deleteBlank/:typeBlank/:id/:idDrawing/:newTypeBlank'),
     __param(0, (0, common_1.Param)('typeBlank')),
@@ -306,7 +307,21 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Number, Number, Number]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "deleteBlank", null);
+], CreateDrawingsController.prototype, "deleteBlank", null);
+__decorate([
+    (0, common_1.Delete)('deleteMaterial/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], CreateDrawingsController.prototype, "deleteMaterial", null);
+__decorate([
+    (0, common_1.Post)('addPositionSP'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], CreateDrawingsController.prototype, "addPositionSP", null);
 __decorate([
     (0, common_1.Post)('save/:typeBlank'),
     __param(0, (0, common_1.Param)('typeBlank')),
@@ -314,37 +329,37 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "saveAll", null);
+], CreateDrawingsController.prototype, "saveAll", null);
 __decorate([
     (0, common_1.Post)('addMaterial'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "addMaterial", null);
+], CreateDrawingsController.prototype, "addMaterial", null);
 __decorate([
     (0, common_1.Get)('findByID/:id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "findByID", null);
+], CreateDrawingsController.prototype, "findByID", null);
 __decorate([
     (0, common_1.Get)('findByNumber/:number'),
     __param(0, (0, common_1.Param)('number')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], DrawingsController.prototype, "findByNumber", null);
+], CreateDrawingsController.prototype, "findByNumber", null);
 __decorate([
     (0, common_1.Get)('scan'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], DrawingsController.prototype, "scan", null);
-DrawingsController = __decorate([
+], CreateDrawingsController.prototype, "scan", null);
+CreateDrawingsController = __decorate([
     (0, common_1.Controller)('drawings'),
-    __metadata("design:paramtypes", [app_service_1.AppService, scan_service_1.ScanService])
-], DrawingsController);
-exports.DrawingsController = DrawingsController;
-//# sourceMappingURL=drawings.controller.js.map
+    __metadata("design:paramtypes", [app_service_1.AppService, scan_service_1.ScanService, drawing_service_1.DrawingService])
+], CreateDrawingsController);
+exports.CreateDrawingsController = CreateDrawingsController;
+//# sourceMappingURL=createDrawings.controller.js.map
