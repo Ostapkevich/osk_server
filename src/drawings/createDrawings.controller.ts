@@ -102,7 +102,7 @@ export class CreateDrawingsController {
             if (typePosition === 1) {
                 sqlPosition = `INSERT INTO osk.sprolled (id_sprolled, id_item, L, d_b, h, plasma, name, id) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_sprolled=VALUES(id_sprolled), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), name=VALUES(name), id=VALUES(id);`;
             } else if (typePosition === 2) {
-                sqlPosition = `INSERT INTO osk.sphardware (id_sphardware, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sphardware=VALUES(id_sphardware), id_item=VALUES(id_item, name=VALUES(name), id=VALUES(id);`;
+                sqlPosition = `INSERT INTO osk.sphardware (id_sphardware, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sphardware=VALUES(id_sphardware), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
             } else if (typePosition === 3) {
                 sqlPosition = `INSERT INTO osk.spmaterial (id_spmaterial, id_item, percent, value, specific_units, L, h, name, id) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_spmaterial=VALUES(id_spmaterial), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h), name=values(name), id=VALUES(id);`;
             } else if (typePosition === 4) {
@@ -113,7 +113,7 @@ export class CreateDrawingsController {
             }
           
             data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
-            return { idParent: idParent, id: data[0].insertId };
+            return { idParent: idParent, idChild: data[0].insertId };
         } catch (error) {
             console.log(error)
             return { serverError: error.message };

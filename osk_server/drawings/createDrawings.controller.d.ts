@@ -36,12 +36,12 @@ export declare class CreateDrawingsController {
     }>;
     addPositionSP(bodyData: any): Promise<{
         idParent: number;
-        id: any;
+        idChild: any;
         serverError?: undefined;
     } | {
         serverError: any;
         idParent?: undefined;
-        id?: undefined;
+        idChild?: undefined;
     }>;
     saveAll(typeBlank: string, bodyData: any): Promise<{
         response: string;

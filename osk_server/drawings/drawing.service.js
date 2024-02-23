@@ -72,7 +72,7 @@ let DrawingService = class DrawingService {
             let sqlPosition = '';
             switch (typePosition) {
                 case 1:
-                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.ind, drawing_specification.quantity, sprolled.id_sprolled AS id, sprolled.id_item AS id, sprolled.plasma, sprolled.L, sprolled.d_b, sprolled.h, sprolled.name, 'б/ч' AS number_item, rolled_type.uselength AS useLenth, rolled.name_item, rolled.id_item AS idItem,
+                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.ind, drawing_specification.quantity, sprolled.id_sprolled AS id, sprolled.id_item AS id, sprolled.plasma, sprolled.L, sprolled.d_b, sprolled.h, sprolled.name, 'б/ч' AS number_item, rolled_type.uselength AS useLenth, rolled.name_item, rolled.id_item AS idItem,
                     CASE
                     WHEN rolled_type.uselength=1 THEN sprolled.L * rolled.weight/1000  
                     ELSE 
@@ -88,19 +88,22 @@ let DrawingService = class DrawingService {
                     WHERE drawing_specification.id=${id};`;
                     break;
                 case 2:
-                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.ind, drawing_specification.quantity, sphardware.id_sphardware AS id, sphardware.id_item, sphardware.name, hardware.weight, hardware.name_item FROM sphardware
+                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.ind, drawing_specification.quantity, sphardware.id_sphardware AS id, sphardware.id_item AS idItem, sphardware.name, 'б/ч' AS number_item, hardware.weight, hardware.name_item 
+                    FROM drawing_specification
                     INNER JOIN sphardware ON drawing_specification.id=sphardware.id     
                     INNER JOIN hardware ON sphardware.id_item=hardware.id_item
-                        WHERE sphardware.id=${id};`;
+                    WHERE sphardware.id=${id};`;
                     break;
                 case 3:
-                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.ind, drawing_specification.quantity, spmaterial.id_spmaterial AS id, spmaterial.id_item, spmaterial.percent, spmaterial.value, spmaterial.specific_units, spmaterial.L, spmaterial.h, spmaterial.name, material.name_item, material.units  FROM spmaterial
+                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.ind, drawing_specification.quantity, spmaterial.id_spmaterial AS id, spmaterial.id_item AS idItem, spmaterial.percent, spmaterial.value, spmaterial.specific_units, spmaterial.L AS len, spmaterial.h, spmaterial.name, 'б/ч' AS number_item, material.name_item, material.units 
+                    FROM drawing_specification
                     INNER JOIN spmaterial ON drawing_specification.id=spmaterial.id        
                     INNER JOIN material ON spmaterial.id_item=material.id_item
                         WHERE spmaterial.id=${id};`;
                     break;
                 case 4:
-                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.ind, drawing_specification.quantity, sppurshasered.id_sppurshasered AS id, sppurshasered.id_item, sppurshasered.name, purchased.name_item, purchased.weight FROM sppurshasered
+                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.ind, drawing_specification.quantity, sppurshasered.id_sppurshasered AS id, sppurshasered.id_item AS idItem, sppurshasered.name, 'б/ч' AS number_item, purchased.name_item, purchased.weight
+                    FROM drawing_specification
                     INNER JOIN sppurshasered ON drawing_specification.id=sppurshasered.id        
                     INNER JOIN purchased ON sppurshasered.id_item=purchased.id_item
                             WHERE sppurshasered.id=${id};`;
