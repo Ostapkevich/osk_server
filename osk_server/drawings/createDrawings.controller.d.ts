@@ -57,32 +57,30 @@ export declare class CreateDrawingsController {
         serverError: any;
         id?: undefined;
     }>;
-    findByID(id: number): Promise<{
-        drawing: any;
-        blank: any;
-        materials: any;
-        positionsSP: any[];
-        serverError?: undefined;
-    } | {
-        serverError: any;
+    findByID(idOrNumber: number | string, findBy: string): Promise<{
+        notFound: string;
         drawing?: undefined;
         blank?: undefined;
         materials?: undefined;
         positionsSP?: undefined;
-    }>;
-    findByNumber(drawingNumber: string): Promise<{
+        serverError?: undefined;
+    } | {
         drawing: any;
         blank: any;
         materials: any;
-        positionsSP: any[];
+        positionsSP: any;
+        notFound?: undefined;
         serverError?: undefined;
     } | {
         serverError: any;
+        notFound?: undefined;
         drawing?: undefined;
         blank?: undefined;
         materials?: undefined;
         positionsSP?: undefined;
-    }>;
+    }> | {
+        serverError: any;
+    };
     scan(): {
         scan: string[];
         serverError?: undefined;

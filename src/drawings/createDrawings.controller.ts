@@ -14,8 +14,6 @@ export class CreateDrawingsController {
             // sqlDrawings = `INSERT INTO osk.drawings (idDrawing, numberDrawing, isp, nameDrawing, weight, type_blank, has_material, L, d_b, h, s, path, isDetail) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), isp=VALUES(isp), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), type_blank=VALUES(type_blank), has_material=VALUES(has_material), L=VALUES(L), d_b=VALUES(d_b), h=VALUES(h), s=VALUES(s), path=VALUES(path), isDetail=VALUES(isDetail);`;
             const sqlDrawing = `INSERT INTO osk.drawings (idDrawing, numberDrawing, nameDrawing, weight, s, path) VALUES ( ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), s=VALUES(s), path=VALUES(path) ;`;
             const data: any = await this.appService.execute(sqlDrawing, bodyData);
-            console.log(bodyData)
-            console.log(data)
             return { response: data[0].insertId };
         } catch (error) {
             if (error.code === 'ER_DUP_ENTRY') {
@@ -29,6 +27,7 @@ export class CreateDrawingsController {
     @Post('saveBlank/:typeBlank')
     async saveBlank(@Param('typeBlank') typeBlank: number, @Body() bodyData) {
         try {
+            await this.appService.execute(`UPDATE drawings SET type_blank=${typeBlank} WHERE idDrawing=${bodyData[1]}`, bodyData);
             let sqlBlank = '';
             if (+typeBlank === 1) {
                 sqlBlank = `INSERT INTO osk.drawing_blank_rolled (id, idDrawing, id_item, L, d_b, h, plasma, allowance) VALUES (?,?, ?, ?, ?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), allowance=VALUES(allowance);`;
@@ -76,10 +75,9 @@ export class CreateDrawingsController {
     }
 
     @Delete('deleteMaterial/:id')
-    async deleteMaterial(@Param('id')id: number) {
+    async deleteMaterial(@Param('id') id: number) {
         try {
-           const data: any = await this.appService.query(`DELETE FROM drawing_materials WHERE id=${id}`);
-           console.log(data)
+            const data: any = await this.appService.query(`DELETE FROM drawing_materials WHERE id=${id}`);
             if (data[0][0].affectedRows && data[0][0].affectedRows) {
                 return { response: 'ok' };
             }
@@ -91,12 +89,9 @@ export class CreateDrawingsController {
     @Post('addPositionSP')
     async addPositionSP(@Body() bodyData: any) {
         try {
-            console.log('bodyData ', bodyData)
             let data: any = await this.appService.execute(`INSERT INTO drawing_specification (ind, idDrawing, type_position, quantity) VALUES (?,?,?,?)`, bodyData.dataSP);
-            console.log('dataDetails befor ',bodyData.dataDetails)
             const idParent: number = data[0].insertId;
             bodyData.dataDetails.push(idParent);
-            console.log('dataDetails after ',bodyData.dataDetails)
             let sqlPosition = '';
             const typePosition = bodyData.dataSP[2];
             if (typePosition === 1) {
@@ -106,12 +101,12 @@ export class CreateDrawingsController {
             } else if (typePosition === 3) {
                 sqlPosition = `INSERT INTO osk.spmaterial (id_spmaterial, id_item, percent, value, specific_units, L, h, name, id) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_spmaterial=VALUES(id_spmaterial), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h), name=values(name), id=VALUES(id);`;
             } else if (typePosition === 4) {
-                sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
+                sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
             } else {
                 sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
 
             }
-          
+
             data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
             return { idParent: idParent, idChild: data[0].insertId };
         } catch (error) {
@@ -247,26 +242,23 @@ export class CreateDrawingsController {
 
 
 
-    @Get('findByID/:id')
-    async findByID(@Param('id') id: number) {
+    @Get('findDrawingInfoFull/:idOrNumber/:findBy')
+     findByID(@Param('idOrNumber') idOrNumber: number | string, @Param('findBy') findBy: string) {
         try {
-            return this.dravingSerice.findBy(`idDrawing=${id}`);
+           
+            if (findBy === 'id') {
+                return  this.dravingSerice.findDrawingInfoFull(`idDrawing=${idOrNumber}`);
+            } else {
+                return this.dravingSerice.findDrawingInfoFull(`numberDrawing='${idOrNumber}'`);
+            }
+
         } catch (error) {
+            console.log('error is',error)
             return { serverError: error.message };
         }
     }
 
-    @Get('findByNumber/:number')
-    async findByNumber(@Param('number') drawingNumber: string) {
-        try {
-            return this.dravingSerice.findBy(`numberDrawing='${drawingNumber}'`);
-        } catch (error) {
-            return { serverError: error.message };
-        }
-    }
-
-
-
+   
     @Get('scan')
     scan() {
         try {

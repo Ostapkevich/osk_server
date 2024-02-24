@@ -28,8 +28,6 @@ let CreateDrawingsController = class CreateDrawingsController {
         try {
             const sqlDrawing = `INSERT INTO osk.drawings (idDrawing, numberDrawing, nameDrawing, weight, s, path) VALUES ( ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE idDrawing=VALUES(idDrawing), numberDrawing=VALUES(numberDrawing), nameDrawing=VALUES(nameDrawing), weight=VALUES(weight), s=VALUES(s), path=VALUES(path) ;`;
             const data = await this.appService.execute(sqlDrawing, bodyData);
-            console.log(bodyData);
-            console.log(data);
             return { response: data[0].insertId };
         }
         catch (error) {
@@ -43,6 +41,7 @@ let CreateDrawingsController = class CreateDrawingsController {
     }
     async saveBlank(typeBlank, bodyData) {
         try {
+            await this.appService.execute(`UPDATE drawings SET type_blank=${typeBlank} WHERE idDrawing=${bodyData[1]}`, bodyData);
             let sqlBlank = '';
             if (+typeBlank === 1) {
                 sqlBlank = `INSERT INTO osk.drawing_blank_rolled (id, idDrawing, id_item, L, d_b, h, plasma, allowance) VALUES (?,?, ?, ?, ?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id), idDrawing=VALUES(idDrawing), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), allowance=VALUES(allowance);`;
@@ -92,7 +91,6 @@ let CreateDrawingsController = class CreateDrawingsController {
     async deleteMaterial(id) {
         try {
             const data = await this.appService.query(`DELETE FROM drawing_materials WHERE id=${id}`);
-            console.log(data);
             if (data[0][0].affectedRows && data[0][0].affectedRows) {
                 return { response: 'ok' };
             }
@@ -103,12 +101,9 @@ let CreateDrawingsController = class CreateDrawingsController {
     }
     async addPositionSP(bodyData) {
         try {
-            console.log('bodyData ', bodyData);
             let data = await this.appService.execute(`INSERT INTO drawing_specification (ind, idDrawing, type_position, quantity) VALUES (?,?,?,?)`, bodyData.dataSP);
-            console.log('dataDetails befor ', bodyData.dataDetails);
             const idParent = data[0].insertId;
             bodyData.dataDetails.push(idParent);
-            console.log('dataDetails after ', bodyData.dataDetails);
             let sqlPosition = '';
             const typePosition = bodyData.dataSP[2];
             if (typePosition === 1) {
@@ -121,7 +116,7 @@ let CreateDrawingsController = class CreateDrawingsController {
                 sqlPosition = `INSERT INTO osk.spmaterial (id_spmaterial, id_item, percent, value, specific_units, L, h, name, id) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_spmaterial=VALUES(id_spmaterial), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h), name=values(name), id=VALUES(id);`;
             }
             else if (typePosition === 4) {
-                sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
+                sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
             }
             else {
                 sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
@@ -257,19 +252,17 @@ let CreateDrawingsController = class CreateDrawingsController {
             return { serverError: error.message };
         }
     }
-    async findByID(id) {
+    findByID(idOrNumber, findBy) {
         try {
-            return this.dravingSerice.findBy(`idDrawing=${id}`);
+            if (findBy === 'id') {
+                return this.dravingSerice.findDrawingInfoFull(`idDrawing=${idOrNumber}`);
+            }
+            else {
+                return this.dravingSerice.findDrawingInfoFull(`numberDrawing='${idOrNumber}'`);
+            }
         }
         catch (error) {
-            return { serverError: error.message };
-        }
-    }
-    async findByNumber(drawingNumber) {
-        try {
-            return this.dravingSerice.findBy(`numberDrawing='${drawingNumber}'`);
-        }
-        catch (error) {
+            console.log('error is', error);
             return { serverError: error.message };
         }
     }
@@ -338,19 +331,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CreateDrawingsController.prototype, "addMaterial", null);
 __decorate([
-    (0, common_1.Get)('findByID/:id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)('findDrawingInfoFull/:idOrNumber/:findBy'),
+    __param(0, (0, common_1.Param)('idOrNumber')),
+    __param(1, (0, common_1.Param)('findBy')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
 ], CreateDrawingsController.prototype, "findByID", null);
-__decorate([
-    (0, common_1.Get)('findByNumber/:number'),
-    __param(0, (0, common_1.Param)('number')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], CreateDrawingsController.prototype, "findByNumber", null);
 __decorate([
     (0, common_1.Get)('scan'),
     __metadata("design:type", Function),
