@@ -37,11 +37,18 @@ export declare class CreateDrawingsController {
     addPositionSP(bodyData: any): Promise<{
         idParent: number;
         idChild: any;
+        response?: undefined;
+        serverError?: undefined;
+    } | {
+        response: string;
+        idParent?: undefined;
+        idChild?: undefined;
         serverError?: undefined;
     } | {
         serverError: any;
         idParent?: undefined;
         idChild?: undefined;
+        response?: undefined;
     }>;
     saveAll(typeBlank: string, bodyData: any): Promise<{
         response: string;
@@ -81,6 +88,20 @@ export declare class CreateDrawingsController {
     }> | {
         serverError: any;
     };
+    deletePositionSP(idDrawing: number, idParent: number, ind: number): Promise<{
+        response: string;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        response?: undefined;
+    }>;
+    changePositionSP(id1: number, ind1: number, id2: number, ind2: number): Promise<{
+        response: string;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        response?: undefined;
+    }>;
     scan(): {
         scan: string[];
         serverError?: undefined;

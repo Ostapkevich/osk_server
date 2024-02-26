@@ -101,11 +101,16 @@ let CreateDrawingsController = class CreateDrawingsController {
     }
     async addPositionSP(bodyData) {
         try {
-            let data = await this.appService.execute(`INSERT INTO drawing_specification (ind, idDrawing, type_position, quantity) VALUES (?,?,?,?)`, bodyData.dataSP);
-            const idParent = data[0].insertId;
-            bodyData.dataDetails.push(idParent);
+            console.log(bodyData);
+            let data = await this.appService.execute(`INSERT INTO drawing_specification (id, ind, idDrawing, type_position, quantity) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id),ind=VALUES(ind),idDrawing=VALUES(idDrawing), type_position=VALUES(type_position), quantity=VALUES(quantity)`, bodyData.dataSP);
+            let idParent;
+            if (bodyData.dataDetails[0] === null) {
+                idParent = data[0].insertId;
+                bodyData.dataDetails.pop();
+                bodyData.dataDetails.push(idParent);
+            }
             let sqlPosition = '';
-            const typePosition = bodyData.dataSP[2];
+            const typePosition = bodyData.dataSP[3];
             if (typePosition === 1) {
                 sqlPosition = `INSERT INTO osk.sprolled (id_sprolled, id_item, L, d_b, h, plasma, name, id) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_sprolled=VALUES(id_sprolled), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), name=VALUES(name), id=VALUES(id);`;
             }
@@ -122,7 +127,12 @@ let CreateDrawingsController = class CreateDrawingsController {
                 sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
             }
             data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
-            return { idParent: idParent, idChild: data[0].insertId };
+            if (bodyData.dataDetails[0] === null) {
+                return { idParent: idParent, idChild: data[0].insertId };
+            }
+            else {
+                return { response: 'ok' };
+            }
         }
         catch (error) {
             console.log(error);
@@ -266,6 +276,35 @@ let CreateDrawingsController = class CreateDrawingsController {
             return { serverError: error.message };
         }
     }
+    async deletePositionSP(idDrawing, idParent, ind) {
+        try {
+            await this.appService.query(`DELETE FROM drawing_specification WHERE id=${idParent}`);
+            await this.appService.query(`UPDATE drawing_specification SET ind = ind - 1 WHERE idDrawing = ${idDrawing} AND ind > ${ind};`);
+            return { response: 'ok' };
+        }
+        catch (error) {
+            console.log(error);
+            return { serverError: error.message };
+        }
+    }
+    async changePositionSP(id1, ind1, id2, ind2) {
+        try {
+            console.log(id1);
+            console.log(ind1);
+            console.log(id2);
+            console.log(ind2);
+            const sql1 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind1} WHERE drawing_specification.id = ${id1};`;
+            const sql2 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind2} WHERE drawing_specification.id = ${id2};`;
+            await this.appService.query(sql1, sql2);
+            console.log(sql1);
+            console.log(sql2);
+            return { response: 'ok' };
+        }
+        catch (error) {
+            console.log(error);
+            return { serverError: error.message };
+        }
+    }
     scan() {
         try {
             const data = this.scanService.scanAllStaticResources(path.join(__dirname, '../..', 'drawings'));
@@ -331,13 +370,32 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CreateDrawingsController.prototype, "addMaterial", null);
 __decorate([
-    (0, common_1.Get)('findDrawingInfoFull/:idOrNumber/:findBy'),
+    (0, common_1.Get)('getDrawingInfoFull/:idOrNumber/:findBy'),
     __param(0, (0, common_1.Param)('idOrNumber')),
     __param(1, (0, common_1.Param)('findBy')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], CreateDrawingsController.prototype, "findByID", null);
+__decorate([
+    (0, common_1.Delete)('deletePositionSP/:idDrawing/:idParent/:ind'),
+    __param(0, (0, common_1.Param)('idDrawing')),
+    __param(1, (0, common_1.Param)('idParent')),
+    __param(2, (0, common_1.Param)('ind')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number]),
+    __metadata("design:returntype", Promise)
+], CreateDrawingsController.prototype, "deletePositionSP", null);
+__decorate([
+    (0, common_1.Put)('changeIndPositionSP/:id1/:ind1/:id2/:ind2'),
+    __param(0, (0, common_1.Param)('id1')),
+    __param(1, (0, common_1.Param)('ind1')),
+    __param(2, (0, common_1.Param)('id2')),
+    __param(3, (0, common_1.Param)('ind2')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Number, Number, Number]),
+    __metadata("design:returntype", Promise)
+], CreateDrawingsController.prototype, "changePositionSP", null);
 __decorate([
     (0, common_1.Get)('scan'),
     __metadata("design:type", Function),

@@ -89,11 +89,16 @@ export class CreateDrawingsController {
     @Post('addPositionSP')
     async addPositionSP(@Body() bodyData: any) {
         try {
-            let data: any = await this.appService.execute(`INSERT INTO drawing_specification (ind, idDrawing, type_position, quantity) VALUES (?,?,?,?)`, bodyData.dataSP);
-            const idParent: number = data[0].insertId;
-            bodyData.dataDetails.push(idParent);
+            console.log(bodyData)
+            let data: any = await this.appService.execute(`INSERT INTO drawing_specification (id, ind, idDrawing, type_position, quantity) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id),ind=VALUES(ind),idDrawing=VALUES(idDrawing), type_position=VALUES(type_position), quantity=VALUES(quantity)`, bodyData.dataSP);
+            let idParent: number|null ;
+            if (bodyData.dataDetails[0] === null) {
+                idParent = data[0].insertId;
+                (bodyData.dataDetails  as Array<any>).pop() ;
+                (bodyData.dataDetails as Array<any>).push(idParent) ;
+            }
             let sqlPosition = '';
-            const typePosition = bodyData.dataSP[2];
+            const typePosition = bodyData.dataSP[3];
             if (typePosition === 1) {
                 sqlPosition = `INSERT INTO osk.sprolled (id_sprolled, id_item, L, d_b, h, plasma, name, id) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_sprolled=VALUES(id_sprolled), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), name=VALUES(name), id=VALUES(id);`;
             } else if (typePosition === 2) {
@@ -104,11 +109,15 @@ export class CreateDrawingsController {
                 sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
             } else {
                 sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
-
+            }
+            data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
+            if (bodyData.dataDetails[0] === null) {
+                return { idParent: idParent, idChild: data[0].insertId };
+               
+            } else {
+                return { response: 'ok' };
             }
 
-            data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
-            return { idParent: idParent, idChild: data[0].insertId };
         } catch (error) {
             console.log(error)
             return { serverError: error.message };
@@ -240,25 +249,61 @@ export class CreateDrawingsController {
         }
     }
 
-
-
-    @Get('findDrawingInfoFull/:idOrNumber/:findBy')
-     findByID(@Param('idOrNumber') idOrNumber: number | string, @Param('findBy') findBy: string) {
+    @Get('getDrawingInfoFull/:idOrNumber/:findBy')
+    findByID(@Param('idOrNumber') idOrNumber: number | string, @Param('findBy') findBy: string) {
         try {
-           
+
             if (findBy === 'id') {
-                return  this.dravingSerice.findDrawingInfoFull(`idDrawing=${idOrNumber}`);
+                return this.dravingSerice.findDrawingInfoFull(`idDrawing=${idOrNumber}`);
             } else {
                 return this.dravingSerice.findDrawingInfoFull(`numberDrawing='${idOrNumber}'`);
             }
 
         } catch (error) {
-            console.log('error is',error)
+            console.log('error is', error)
             return { serverError: error.message };
         }
     }
 
-   
+
+    @Delete('deletePositionSP/:idDrawing/:idParent/:ind')
+    async deletePositionSP(@Param('idDrawing') idDrawing: number, @Param('idParent') idParent: number, @Param('ind') ind: number) {
+        try {
+            await this.appService.query(`DELETE FROM drawing_specification WHERE id=${idParent}`);
+            await this.appService.query(`UPDATE drawing_specification SET ind = ind - 1 WHERE idDrawing = ${idDrawing} AND ind > ${ind};`)
+            return { response: 'ok' };
+        } catch (error) {
+            console.log(error)
+            return { serverError: error.message };
+        }
+    }
+
+
+    @Put('changeIndPositionSP/:id1/:ind1/:id2/:ind2')
+    async changePositionSP(@Param('id1') id1: number, @Param('ind1') ind1: number, @Param('id2') id2: number, @Param('ind2') ind2: number) {
+        try {
+            console.log(id1)
+            console.log(ind1)
+            console.log(id2)
+            console.log(ind2)
+            /* const sql1 = `UPDATE drawing_specification SET ind = ? WHERE id = ?;`
+            const sql2 = `UPDATE drawing_specification SET ind = ? WHERE id = ?;`
+            await this.appService.executeMultiple([[+ind1,+id1],[+ind2,+id2]], sql1,sql2);
+ */
+            const sql1 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind1} WHERE drawing_specification.id = ${id1};`
+            const sql2 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind2} WHERE drawing_specification.id = ${id2};`
+            await this.appService.query(sql1, sql2);
+            console.log(sql1)
+            console.log(sql2)
+
+            return { response: 'ok' };
+        } catch (error) {
+            console.log(error)
+            return { serverError: error.message };
+        }
+    }
+
+
     @Get('scan')
     scan() {
         try {
