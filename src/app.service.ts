@@ -26,7 +26,6 @@ export class AppService {
     const data = await Promise.all(queries.map((query, index) => this.connection.execute(query, bodyData[index])));
    
     return data;
-  }
  
-
+  }
 }

@@ -85,6 +85,7 @@ let CreateDrawingsController = class CreateDrawingsController {
             }
         }
         catch (error) {
+            console.log(error);
             return { serverError: error.message };
         }
     }
@@ -102,13 +103,15 @@ let CreateDrawingsController = class CreateDrawingsController {
     async addPositionSP(bodyData) {
         try {
             console.log(bodyData);
+            if (bodyData.dataSP[0] !== null) {
+                await this.appService.query(`UPDATE drawing_specification SET ind = ind + 1 WHERE idDrawing = ${bodyData.dataSP[2]} AND ind >= ${bodyData.dataSP[1]};`);
+                return { response: 'ok' };
+            }
             let data = await this.appService.execute(`INSERT INTO drawing_specification (id, ind, idDrawing, type_position, quantity) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id),ind=VALUES(ind),idDrawing=VALUES(idDrawing), type_position=VALUES(type_position), quantity=VALUES(quantity)`, bodyData.dataSP);
             let idParent;
-            if (bodyData.dataDetails[0] === null) {
-                idParent = data[0].insertId;
-                bodyData.dataDetails.pop();
-                bodyData.dataDetails.push(idParent);
-            }
+            idParent = data[0].insertId;
+            bodyData.dataDetails.pop();
+            bodyData.dataDetails.push(idParent);
             let sqlPosition = '';
             const typePosition = bodyData.dataSP[3];
             if (typePosition === 1) {
@@ -127,11 +130,11 @@ let CreateDrawingsController = class CreateDrawingsController {
                 sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
             }
             data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
-            if (bodyData.dataDetails[0] === null) {
+            if (data[0].insertId) {
                 return { idParent: idParent, idChild: data[0].insertId };
             }
             else {
-                return { response: 'ok' };
+                return { response: 'Что то пошло не так.' };
             }
         }
         catch (error) {
@@ -254,9 +257,16 @@ let CreateDrawingsController = class CreateDrawingsController {
     }
     async addMaterial(bodyData) {
         try {
-            const sqlMaterial = `INSERT INTO drawing_materials (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?,?,?,?,?,?,?);`;
+            const sqlMaterial = `INSERT INTO drawing_materials (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?,?,?,?,?,?,?)
+            ON DUPLICATE KEY UPDATE percent=VALUES(percent),value=VALUES(value),specific_units=VALUES(specific_units),L=VALUES(L),h=VALUES(h);`;
             const data = await this.appService.execute(sqlMaterial, bodyData);
-            return { id: data[0].insertId };
+            console.log(data);
+            if (bodyData[0] === null) {
+                return { id: data[0].insertId };
+            }
+            else {
+                return { response: 'ok' };
+            }
         }
         catch (error) {
             return { serverError: error.message };
@@ -289,15 +299,9 @@ let CreateDrawingsController = class CreateDrawingsController {
     }
     async changePositionSP(id1, ind1, id2, ind2) {
         try {
-            console.log(id1);
-            console.log(ind1);
-            console.log(id2);
-            console.log(ind2);
             const sql1 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind1} WHERE drawing_specification.id = ${id1};`;
             const sql2 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind2} WHERE drawing_specification.id = ${id2};`;
             await this.appService.query(sql1, sql2);
-            console.log(sql1);
-            console.log(sql2);
             return { response: 'ok' };
         }
         catch (error) {

@@ -35,20 +35,20 @@ export declare class CreateDrawingsController {
         response?: undefined;
     }>;
     addPositionSP(bodyData: any): Promise<{
-        idParent: number;
-        idChild: any;
-        response?: undefined;
-        serverError?: undefined;
-    } | {
         response: string;
         idParent?: undefined;
         idChild?: undefined;
         serverError?: undefined;
     } | {
+        idParent: number;
+        idChild: any;
+        response?: undefined;
+        serverError?: undefined;
+    } | {
         serverError: any;
+        response?: undefined;
         idParent?: undefined;
         idChild?: undefined;
-        response?: undefined;
     }>;
     saveAll(typeBlank: string, bodyData: any): Promise<{
         response: string;
@@ -59,10 +59,16 @@ export declare class CreateDrawingsController {
     }>;
     addMaterial(bodyData: any): Promise<{
         id: any;
+        response?: undefined;
+        serverError?: undefined;
+    } | {
+        response: string;
+        id?: undefined;
         serverError?: undefined;
     } | {
         serverError: any;
         id?: undefined;
+        response?: undefined;
     }>;
     findByID(idOrNumber: number | string, findBy: string): Promise<{
         notFound: string;

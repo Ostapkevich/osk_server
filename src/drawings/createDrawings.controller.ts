@@ -41,7 +41,6 @@ export class CreateDrawingsController {
             const data: any = await this.appService.execute(sqlBlank, bodyData);
             return { id: data[0].insertId };
         } catch (error) {
-
             return { serverError: error.message };
         }
     }
@@ -70,6 +69,7 @@ export class CreateDrawingsController {
                 return { response: 'ok' };
             }
         } catch (error) {
+            console.log(error)
             return { serverError: error.message };
         }
     }
@@ -90,32 +90,33 @@ export class CreateDrawingsController {
     async addPositionSP(@Body() bodyData: any) {
         try {
             console.log(bodyData)
-            let data: any = await this.appService.execute(`INSERT INTO drawing_specification (id, ind, idDrawing, type_position, quantity) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id),ind=VALUES(ind),idDrawing=VALUES(idDrawing), type_position=VALUES(type_position), quantity=VALUES(quantity)`, bodyData.dataSP);
-            let idParent: number|null ;
-            if (bodyData.dataDetails[0] === null) {
-                idParent = data[0].insertId;
-                (bodyData.dataDetails  as Array<any>).pop() ;
-                (bodyData.dataDetails as Array<any>).push(idParent) ;
+            if (bodyData.dataSP[0] !== null) {
+                await this.appService.query(`UPDATE drawing_specification SET ind = ind + 1 WHERE idDrawing = ${bodyData.dataSP[2]} AND ind >= ${bodyData.dataSP[1]};`);
+                return { response: 'ok' };
             }
+            let data: any = await this.appService.execute(`INSERT INTO drawing_specification (id, ind, idDrawing, type_position, quantity) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE id=VALUES(id),ind=VALUES(ind),idDrawing=VALUES(idDrawing), type_position=VALUES(type_position), quantity=VALUES(quantity)`, bodyData.dataSP);
+            let idParent: number | null;
+            idParent = data[0].insertId;
+            (bodyData.dataDetails as Array<any>).pop();
+            (bodyData.dataDetails as Array<any>).push(idParent);
             let sqlPosition = '';
             const typePosition = bodyData.dataSP[3];
-            if (typePosition === 1) {
+            if (typePosition === 1) {//б/ч Прокат
                 sqlPosition = `INSERT INTO osk.sprolled (id_sprolled, id_item, L, d_b, h, plasma, name, id) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_sprolled=VALUES(id_sprolled), id_item=VALUES(id_item), L=VALUES(L), d_b=VALUES(d_b), h=values(h), plasma=VALUES(plasma), name=VALUES(name), id=VALUES(id);`;
-            } else if (typePosition === 2) {
+            } else if (typePosition === 2) {//б/ч Метизы
                 sqlPosition = `INSERT INTO osk.sphardware (id_sphardware, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sphardware=VALUES(id_sphardware), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
-            } else if (typePosition === 3) {
+            } else if (typePosition === 3) {//б/ч Материалы
                 sqlPosition = `INSERT INTO osk.spmaterial (id_spmaterial, id_item, percent, value, specific_units, L, h, name, id) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id_spmaterial=VALUES(id_spmaterial), id_item=VALUES(id_item),  percent=VALUES(percent), value=VALUES(value), specific_units=VALUES(specific_units), L=VALUES(L), h=values(h), name=values(name), id=VALUES(id);`;
-            } else if (typePosition === 4) {
+            } else if (typePosition === 4) {//б/ч Покупные
                 sqlPosition = `INSERT INTO osk.sppurshasered (id_sppurshasered, id_item, name, id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id_sppurshasered=VALUES(id_sppurshasered), id_item=VALUES(id_item), name=VALUES(name), id=VALUES(id);`;
-            } else {
+            } else {//Чертеж
                 sqlPosition = `INSERT INTO osk.spdrawing (id_spdrawing, idDrawing, id) VALUES (?,?,?) ON DUPLICATE KEY UPDATE id_spdrawing=VALUES(id_spdrawing), idDrawing=VALUES(idDrawing),id=VALUES(id);`;
             }
             data = await this.appService.execute(sqlPosition, bodyData.dataDetails);
-            if (bodyData.dataDetails[0] === null) {
+            if (data[0].insertId) {
                 return { idParent: idParent, idChild: data[0].insertId };
-               
             } else {
-                return { response: 'ok' };
+                return { response: 'Что то пошло не так.' };
             }
 
         } catch (error) {
@@ -241,14 +242,22 @@ export class CreateDrawingsController {
     @Post('addMaterial')
     async addMaterial(@Body() bodyData) {
         try {
-            const sqlMaterial = `INSERT INTO drawing_materials (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?,?,?,?,?,?,?);`;
+            const sqlMaterial = `INSERT INTO drawing_materials (id, idDrawing, id_item, percent, value, specific_units, L, h) VALUES (?,?,?,?,?,?,?,?)
+            ON DUPLICATE KEY UPDATE percent=VALUES(percent),value=VALUES(value),specific_units=VALUES(specific_units),L=VALUES(L),h=VALUES(h);`;
             const data: any = await this.appService.execute(sqlMaterial, bodyData);
-            return { id: data[0].insertId };
+            console.log(data)
+            if (bodyData[0] === null) {
+                return { id: data[0].insertId };
+            } else {
+                return { response: 'ok' };
+            }
+
         } catch (error) {
             return { serverError: error.message };
         }
     }
 
+   
     @Get('getDrawingInfoFull/:idOrNumber/:findBy')
     findByID(@Param('idOrNumber') idOrNumber: number | string, @Param('findBy') findBy: string) {
         try {
@@ -282,20 +291,9 @@ export class CreateDrawingsController {
     @Put('changeIndPositionSP/:id1/:ind1/:id2/:ind2')
     async changePositionSP(@Param('id1') id1: number, @Param('ind1') ind1: number, @Param('id2') id2: number, @Param('ind2') ind2: number) {
         try {
-            console.log(id1)
-            console.log(ind1)
-            console.log(id2)
-            console.log(ind2)
-            /* const sql1 = `UPDATE drawing_specification SET ind = ? WHERE id = ?;`
-            const sql2 = `UPDATE drawing_specification SET ind = ? WHERE id = ?;`
-            await this.appService.executeMultiple([[+ind1,+id1],[+ind2,+id2]], sql1,sql2);
- */
             const sql1 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind1} WHERE drawing_specification.id = ${id1};`
             const sql2 = `UPDATE drawing_specification SET drawing_specification.ind = ${ind2} WHERE drawing_specification.id = ${id2};`
             await this.appService.query(sql1, sql2);
-            console.log(sql1)
-            console.log(sql2)
-
             return { response: 'ok' };
         } catch (error) {
             console.log(error)
