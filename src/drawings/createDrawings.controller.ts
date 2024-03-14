@@ -47,7 +47,7 @@ export class CreateDrawingsController {
 
 
     @Delete('deleteBlank/:typeBlank/:id/:idDrawing/:newTypeBlank')
-    async deleteBlank(@Param('typeBlank') typeBlank: number, @Param('id') id: number, @Param('idDrawing') idDrawing: number, @Param('newTypeBlank') newTypeBlank: number) {
+    async deleteBlank(@Param('typeBlank') typeBlank: number, @Param('id') id: number, @Param('idDrawing') idDrawing: number, @Param('newTypeBlank') newTypeBlank: number | null) {
         try {
             let oldTable = '';
             switch (+typeBlank) {
@@ -257,7 +257,7 @@ export class CreateDrawingsController {
         }
     }
 
-   
+
     @Get('getDrawingInfoFull/:idOrNumber/:findBy')
     findByID(@Param('idOrNumber') idOrNumber: number | string, @Param('findBy') findBy: string) {
         try {
@@ -270,6 +270,23 @@ export class CreateDrawingsController {
 
         } catch (error) {
             console.log('error is', error)
+            return { serverError: error.message };
+        }
+    }
+
+
+    @Get('hasNumberDrawing/:number')
+    async hasNumberDrawing(@Param('number') number: string) {
+        try {
+            console.log('number is ', number)
+            const data: any = await this.appService.query(`SELECT idDrawing FROM drawings WHERE numberDrawing='${number}';`);
+            if (data[0][0].length = 0) {
+                return { response: 'no exist' }
+            } else {
+                return { response: 'exist' }
+            }
+           
+        } catch (error) {
             return { serverError: error.message };
         }
     }

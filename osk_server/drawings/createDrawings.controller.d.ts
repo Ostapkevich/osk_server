@@ -20,7 +20,7 @@ export declare class CreateDrawingsController {
         serverError: any;
         id?: undefined;
     }>;
-    deleteBlank(typeBlank: number, id: number, idDrawing: number, newTypeBlank: number): Promise<{
+    deleteBlank(typeBlank: number, id: number, idDrawing: number, newTypeBlank: number | null): Promise<{
         response: string;
         serverError?: undefined;
     } | {
@@ -94,6 +94,13 @@ export declare class CreateDrawingsController {
     }> | {
         serverError: any;
     };
+    hasNumberDrawing(number: string): Promise<{
+        response: string;
+        serverError?: undefined;
+    } | {
+        serverError: any;
+        response?: undefined;
+    }>;
     deletePositionSP(idDrawing: number, idParent: number, ind: number): Promise<{
         response: string;
         serverError?: undefined;

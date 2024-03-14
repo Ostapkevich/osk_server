@@ -48,6 +48,10 @@ let ViewDrawingsController = class ViewDrawingsController {
             if (data[0].length > 0) {
                 const sqlArray = [];
                 let sqlDrawing = '';
+                let sqlSb = '';
+                const drawings = [];
+                let dataDtawings;
+                let dataSb;
                 for (const item of data[0]) {
                     switch (item.type_blank) {
                         case 1:
@@ -61,7 +65,7 @@ let ViewDrawingsController = class ViewDrawingsController {
                     END
             END AS value 
             FROM drawings
-            INNER JOIN drawing_blank_rolled ON drawings.idDrawing=drawing_blank_rolled.idDrawing
+            LEFT JOIN drawing_blank_rolled ON drawings.idDrawing=drawing_blank_rolled.idDrawing
             INNER JOIN rolled ON rolled.id_item=drawing_blank_rolled.id_item
             INNER JOIN rolled_type ON rolled.id_type=rolled_type.id_type
            WHERE drawings.idDrawing=${item.idDrawing};`;
@@ -91,18 +95,21 @@ let ViewDrawingsController = class ViewDrawingsController {
                 WHERE drawings.idDrawing=${item.idDrawing};`;
                             break;
                         default:
-                            sqlDrawing = `SELECT drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight  FROM drawings WHERE drawings.idDrawing=${item.idDrawing};`;
+                            sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, 'noBlank' AS noBlank  FROM drawings WHERE drawings.idDrawing=${item.idDrawing};`;
                             break;
                     }
-                    sqlArray.push(sqlDrawing);
+                    sqlSb = `SELECT CASE WHEN EXISTS (SELECT * FROM drawing_specification WHERE idDrawing=${item.idDrawing}) THEN 1 ELSE 0 END AS isSB;`;
+                    dataDtawings = await this.appService.query(sqlDrawing);
+                    dataSb = await this.appService.query(sqlSb);
+                    dataDtawings[0][0][0].isSB = dataSb[0][0][0].isSB;
+                    drawings.push(dataDtawings[0][0][0]);
                 }
-                data = await this.appService.query(...sqlArray);
-                console.log(sqlArray);
+                console.log('drawings  ', drawings);
+                return { drawings: drawings };
             }
             else {
                 return { notFound: 'not found' };
             }
-            return { drawings: data[0][0] };
         }
         catch (error) {
             console.log(error);

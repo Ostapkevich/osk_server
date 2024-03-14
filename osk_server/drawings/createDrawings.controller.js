@@ -286,6 +286,21 @@ let CreateDrawingsController = class CreateDrawingsController {
             return { serverError: error.message };
         }
     }
+    async hasNumberDrawing(number) {
+        try {
+            console.log('number is ', number);
+            const data = await this.appService.query(`SELECT idDrawing FROM drawings WHERE numberDrawing='${number}';`);
+            if (data[0][0].length = 0) {
+                return { response: 'no exist' };
+            }
+            else {
+                return { response: 'exist' };
+            }
+        }
+        catch (error) {
+            return { serverError: error.message };
+        }
+    }
     async deletePositionSP(idDrawing, idParent, ind) {
         try {
             await this.appService.query(`DELETE FROM drawing_specification WHERE id=${idParent}`);
@@ -381,6 +396,13 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], CreateDrawingsController.prototype, "findByID", null);
+__decorate([
+    (0, common_1.Get)('hasNumberDrawing/:number'),
+    __param(0, (0, common_1.Param)('number')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], CreateDrawingsController.prototype, "hasNumberDrawing", null);
 __decorate([
     (0, common_1.Delete)('deletePositionSP/:idDrawing/:idParent/:ind'),
     __param(0, (0, common_1.Param)('idDrawing')),

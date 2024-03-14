@@ -3,16 +3,16 @@ export declare class ViewDrawingsController {
     private appService;
     constructor(appService: AppService);
     viewDrawings(searchParams: any): Promise<{
+        drawings: any[];
+        notFound?: undefined;
+        serverError?: undefined;
+    } | {
         notFound: string;
         drawings?: undefined;
         serverError?: undefined;
     } | {
-        drawings: any;
-        notFound?: undefined;
-        serverError?: undefined;
-    } | {
         serverError: any;
-        notFound?: undefined;
         drawings?: undefined;
+        notFound?: undefined;
     }>;
 }

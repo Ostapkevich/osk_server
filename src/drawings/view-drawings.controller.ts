@@ -48,11 +48,13 @@ export class ViewDrawingsController {
       if ((data[0] as []).length > 0) {
         const sqlArray: string[] = [];
         let sqlDrawing = '';
-
+        let sqlSb = '';
+        const drawings: any[] = [];
+        let dataDtawings: any;
+        let dataSb: any
         for (const item of data[0]) {
           switch (item.type_blank) {
             case 1:
-
               sqlDrawing = `SELECT drawings.idDrawing , drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, drawing_blank_rolled.plasma, (drawing_blank_rolled.L +drawing_blank_rolled.allowance) AS len, (drawing_blank_rolled.d_b+drawing_blank_rolled.allowance) AS dw, (drawing_blank_rolled.h+drawing_blank_rolled.allowance) AS h, rolled.name_item, rolled_type.uselength, 
             CASE
                 WHEN rolled_type.uselength=1 THEN (drawing_blank_rolled.L + drawing_blank_rolled.allowance)*rolled.weight/1000  
@@ -63,11 +65,11 @@ export class ViewDrawingsController {
                     END
             END AS value 
             FROM drawings
-            INNER JOIN drawing_blank_rolled ON drawings.idDrawing=drawing_blank_rolled.idDrawing
+            LEFT JOIN drawing_blank_rolled ON drawings.idDrawing=drawing_blank_rolled.idDrawing
             INNER JOIN rolled ON rolled.id_item=drawing_blank_rolled.id_item
             INNER JOIN rolled_type ON rolled.id_type=rolled_type.id_type
            WHERE drawings.idDrawing=${item.idDrawing};`;
-            
+
               break;
             case 2:
               sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, hardware.name_item, hardware.weight
@@ -94,26 +96,26 @@ export class ViewDrawingsController {
                 WHERE drawings.idDrawing=${item.idDrawing};`;
               break;
             default:
-              sqlDrawing = `SELECT drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight  FROM drawings WHERE drawings.idDrawing=${item.idDrawing};`
+              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, 'noBlank' AS noBlank  FROM drawings WHERE drawings.idDrawing=${item.idDrawing};`
               break;
           }
-          sqlArray.push(sqlDrawing);
+          sqlSb = `SELECT CASE WHEN EXISTS (SELECT * FROM drawing_specification WHERE idDrawing=${item.idDrawing}) THEN 1 ELSE 0 END AS isSB;`
+          dataDtawings = await this.appService.query(sqlDrawing);
+          dataSb= await this.appService.query(sqlSb);
+          dataDtawings[0][0][0].isSB=dataSb[0][0][0].isSB;
+          drawings.push( dataDtawings[0][0][0]);
         }
-      
-        data = await this.appService.query(...sqlArray)
-        console.log(sqlArray)  
-      } else{
+
+     
+        console.log('drawings  ', drawings)
+        return { drawings: drawings };
+      } else {
         return { notFound: 'not found' };
       }
-    
-     // console.log('resalts ', data[0][0])
-      return { drawings: data[0][0] };
     } catch (error) {
       console.log(error)
       return { serverError: error.message };
     }
   }
-
-
 
 }

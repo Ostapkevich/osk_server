@@ -31,6 +31,7 @@ let DrawingService = class DrawingService {
             return { drawing: drawingInfo, blank: dataBlank, materials: dataMaterial, positionsSP: dataSP };
         }
         catch (error) {
+            console.log('findDrawingInfoFull ERROR');
             return { serverError: error.message };
         }
     }
@@ -41,6 +42,7 @@ let DrawingService = class DrawingService {
             return dataDrawing[0][0][0];
         }
         catch (error) {
+            console.log('drawingInfo ERROR');
             throw error;
         }
     }
@@ -75,6 +77,7 @@ let DrawingService = class DrawingService {
             return dataBlank ? dataBlank[0][0][0] : undefined;
         }
         catch (error) {
+            console.log('blankInfo ERROR');
             throw error;
         }
     }
@@ -86,6 +89,7 @@ let DrawingService = class DrawingService {
             return dataMaterial ? dataMaterial[0][0] : undefined;
         }
         catch (error) {
+            console.log('materialInfo ERROR');
             throw error;
         }
     }
@@ -93,12 +97,15 @@ let DrawingService = class DrawingService {
         try {
             const positions = await this.appService.query(`SELECT id, type_position FROM drawing_specification WHERE  idDrawing= ${idDrawing} ORDER BY ind`);
             let positionsSP = [];
+            let data;
             for (const item of positions[0][0]) {
-                positionsSP.push(await this.selectPositionSP(item.type_position, item.id));
+                data = await this.selectPositionSP(item.type_position, item.id);
+                positionsSP.push(data);
             }
             return positionsSP.length === 0 ? undefined : positionsSP;
         }
         catch (error) {
+            console.log('spInfo ERROR');
             throw error;
         }
     }
@@ -123,7 +130,7 @@ let DrawingService = class DrawingService {
                     WHERE sphardware.id=${id};`;
                     break;
                 case 3:
-                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spmaterial.id_spmaterial AS idChild, spmaterial.id_item AS idItem, spmaterial.percent, spmaterial.value, spmaterial.specific_units , spmaterial.L AS len, spmaterial.h, spmaterial.name AS nameDrawing, 'б/ч' AS number_item, material.name_item, material.units
+                    sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spmaterial.id_spmaterial AS idChild, spmaterial.id_item AS idItem, spmaterial.percent, spmaterial.value, spmaterial.specific_units , spmaterial.L AS len, spmaterial.h, spmaterial.name AS nameDrawing, 'б/ч' AS numberDrawing, material.name_item, material.units
                     FROM drawing_specification
                     INNER JOIN spmaterial ON drawing_specification.id=spmaterial.id        
                     INNER JOIN material ON spmaterial.id_item=material.id_item
@@ -138,7 +145,8 @@ let DrawingService = class DrawingService {
                     break;
                 case 5:
                     const typeBlank = await this.appService.query(`SELECT drawings.type_blank, drawings.idDrawing FROM drawings INNER JOIN spdrawing ON drawings.idDrawing=spdrawing.idDrawing WHERE spdrawing.id=${id};`);
-                    sqlPosition = this.selectDrawingPositionSP(typeBlank[0][0][0].type_blank, typeBlank[0][0][0].idDrawing, id);
+                    console.log('typeBlank[0][0][0].type_blank ', typeBlank[0][0][0]);
+                    sqlPosition = this.sqlDrawingPositionSP(typeBlank[0][0][0].type_blank, typeBlank[0][0][0].idDrawing, id);
                     isSB = await this.appService.query(`SELECT CASE WHEN EXISTS (SELECT * FROM drawing_specification WHERE idDrawing=${typeBlank[0][0][0].idDrawing}) THEN 1 ELSE 0 END AS isSB;`);
                     break;
             }
@@ -146,14 +154,18 @@ let DrawingService = class DrawingService {
             if (typePosition === 5) {
                 dataPosition[0][0][0].isSB = isSB[0][0][0].isSB;
             }
+            console.log(dataPosition[0][0][0]);
             return dataPosition[0][0][0];
         }
         catch (error) {
+            console.log('selectPositionSP ERROR');
+            console.log('typePosition ', typePosition);
+            console.log('id ', id);
             console.log(error);
             throw error;
         }
     }
-    selectDrawingPositionSP(typeBlank, idDrawing, id) {
+    sqlDrawingPositionSP(typeBlank, idDrawing, id) {
         try {
             let sqlDrawing = '';
             switch (typeBlank) {
@@ -177,7 +189,7 @@ let DrawingService = class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 2:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild,drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing, drawings.weight, hardware.name_item, hardware.weight FROM drawing_specification
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild,drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing, drawings.weight, hardware.name_item, hardware.weight AS value FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
                     INNER JOIN drawing_blank_hardware ON spdrawing.idDrawing=drawing_blank_hardware.idDrawing
@@ -195,13 +207,20 @@ let DrawingService = class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 4:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem drawings.nameDrawing , drawings.weight, purchased.name_item, purchased.weight FROM drawing_specification
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem drawings.nameDrawing , drawings.weight, purchased.name_item, purchased.weight AS value FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
                     INNER JOIN drawing_blank_purshased ON spdrawing.idDrawing=drawing_blank_purshased.idDrawing
                     INNER JOIN purchased ON purchased.id_item=drawing_blank_purshased.id_item
                     INNER JOIN purchased_type ON purchased.id_type=purchased_type.id_type
                    WHERE drawing_specification.id=${id};`;
+                    break;
+                default:
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing , drawings.weight , 'noBlank' AS noBlank
+                    FROM drawing_specification
+                    INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
+                    INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
+                    WHERE drawing_specification.id=${id};`;
                     break;
             }
             return sqlDrawing;

@@ -29,5 +29,5 @@ export declare class DrawingService {
     materialInfo(idDrawing: number): Promise<any>;
     spInfo(idDrawing: number): Promise<any[]>;
     selectPositionSP(typePosition: number, id: number): Promise<any>;
-    selectDrawingPositionSP(typeBlank: number, idDrawing: number, id: number): string;
+    sqlDrawingPositionSP(typeBlank: number, idDrawing: number, id: number): string;
 }
