@@ -72,7 +72,7 @@ export class ViewDrawingsController {
 
               break;
             case 2:
-              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, hardware.name_item, hardware.weight
+              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, hardware.name_item, hardware.weight AS value
                 FROM drawings
                 INNER JOIN drawing_blank_hardware ON drawings.idDrawing=drawing_blank_hardware.idDrawing
                 INNER JOIN hardware ON hardware.id_item=drawing_blank_hardware.id_item
@@ -80,7 +80,16 @@ export class ViewDrawingsController {
                WHERE drawings.idDrawing=${item.idDrawing};`;
               break;
             case 3:
-              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, drawing_blank_material.percent, drawing_blank_material.value, drawing_blank_material.specific_units, drawing_blank_material.L AS len, drawing_blank_material.h, material.name_item, material.units 
+              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, drawing_blank_material.percent, drawing_blank_material.specific_units, drawing_blank_material.L AS len, drawing_blank_material.h, material.name_item, material.units,
+              CASE
+              WHEN drawing_blank_material.specific_units=0 THEN drawing_blank_material.percent*drawings.weight 
+              WHEN drawing_blank_material.specific_units=1 THEN drawing_blank_material.percent*drawings.s 
+              ELSE 
+                CASE 
+                WHEN material.units=1 THEN (drawing_blank_material.L * drawing_blank_material.h)/1000000
+                ELSE drawing_blank_material.value
+                END
+            END  AS value  
                 FROM drawings
                 INNER JOIN drawing_blank_material ON drawings.idDrawing=drawing_blank_material.idDrawing
                 INNER JOIN material ON material.id_item=drawing_blank_material.id_item
@@ -88,7 +97,7 @@ export class ViewDrawingsController {
                 WHERE drawings.idDrawing=${item.idDrawing};`;
               break;
             case 4:
-              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, purchased.name_item, purchased.weight 
+              sqlDrawing = `SELECT drawings.idDrawing, drawings.numberDrawing, drawings.nameDrawing, drawings.weight, drawings.path, drawings.weight, purchased.name_item, purchased.weight AS value
                 FROM drawings
                 INNER JOIN drawing_blank_purshased ON drawings.idDrawing=drawing_blank_purshased.idDrawing
                 INNER JOIN purchased ON purchased.id_item=drawing_blank_purshased.id_item
