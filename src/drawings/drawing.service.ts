@@ -181,7 +181,7 @@ export class DrawingService {
             let sqlDrawing = '';
             switch (typeBlank) {
                 case 1:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.nameDrawing , drawings.weight, drawing_blank_rolled.plasma, (drawing_blank_rolled.L +drawing_blank_rolled.allowance) AS len, drawings.idDrawing AS idItem, (drawing_blank_rolled.d_b+drawing_blank_rolled.allowance) AS dw, (drawing_blank_rolled.h+drawing_blank_rolled.allowance) AS h, rolled.name_item,  rolled_type.uselength, 
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.nameDrawing , drawings.weight, drawings.s, drawing_blank_rolled.plasma, (drawing_blank_rolled.L +drawing_blank_rolled.allowance) AS len, drawings.idDrawing AS idItem, (drawing_blank_rolled.d_b+drawing_blank_rolled.allowance) AS dw, (drawing_blank_rolled.h+drawing_blank_rolled.allowance) AS h, rolled.name_item,  rolled_type.uselength, 
                     CASE
                         WHEN rolled_type.uselength=1 THEN (drawing_blank_rolled.L + drawing_blank_rolled.allowance)*rolled.weight/1000  
                         ELSE 
@@ -200,7 +200,7 @@ export class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 2:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild,drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing, drawings.weight, hardware.name_item, hardware.weight AS value
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild,drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing, drawings.weight, drawings.s,hardware.name_item, hardware.weight AS value
                     FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
@@ -210,7 +210,7 @@ export class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 3:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing , drawings.weight, drawing_blank_material.percent, drawing_blank_material.specific_units, drawing_blank_material.L AS len, drawing_blank_material.h, material.name_item, material.units, 
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing , drawings.weight,drawings.s,drawing_blank_material.percent, drawing_blank_material.specific_units, drawing_blank_material.L AS len, drawing_blank_material.h, material.name_item, material.units, 
                     CASE
                       WHEN drawing_blank_material.specific_units=0 THEN drawing_blank_material.percent*drawings.weight 
                       WHEN drawing_blank_material.specific_units=1 THEN drawing_blank_material.percent*drawings.s 
@@ -229,7 +229,7 @@ export class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 4:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem drawings.nameDrawing , drawings.weight, purchased.name_item, purchased.weight AS value
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem drawings.nameDrawing , drawings.weight,drawings.s, purchased.name_item, purchased.weight AS value
                     FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
@@ -239,7 +239,7 @@ export class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 default:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing , drawings.weight , 'noBlank' AS noBlank
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing , drawings.weight , drawings.s, 'noBlank' AS noBlank
                     FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
