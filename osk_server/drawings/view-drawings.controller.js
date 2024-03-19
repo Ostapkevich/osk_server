@@ -19,6 +19,10 @@ let ViewDrawingsController = class ViewDrawingsController {
     constructor(appService) {
         this.appService = appService;
     }
+    downloadFile(res, path) {
+        const file = path;
+        res.download(file);
+    }
     async viewDrawings(searchParams) {
         try {
             const params = [];
@@ -126,6 +130,14 @@ let ViewDrawingsController = class ViewDrawingsController {
         }
     }
 };
+__decorate([
+    (0, common_1.Get)('download/:pathDrawing'),
+    __param(0, (0, common_1.Res)()),
+    __param(1, (0, common_1.Param)('pathDrawing')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], ViewDrawingsController.prototype, "downloadFile", null);
 __decorate([
     (0, common_1.Get)('selectDrawings'),
     __param(0, (0, common_1.Query)()),

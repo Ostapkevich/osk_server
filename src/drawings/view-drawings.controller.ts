@@ -1,5 +1,7 @@
-import { Controller, Get, Body, Query } from '@nestjs/common';
+import { Controller, Get, Query, Res,Param } from '@nestjs/common';
 import { AppService } from 'src/app.service';
+import { Response } from 'express';
+import * as path from 'path';
 
 interface Idrawing {
   idDrawing?: number,
@@ -16,6 +18,11 @@ export class ViewDrawingsController {
 
   }
 
+  @Get('download/:pathDrawing')
+  downloadFile(@Res() res: Response, @Param('pathDrawing') path:string) {
+    const file = path; // Замените на путь к вашему файлу
+    res.download(file); // Отправить файл клиенту для скачивания
+  }
 
   @Get('selectDrawings')
   async viewDrawings(@Query() searchParams) {
