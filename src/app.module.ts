@@ -5,13 +5,13 @@ import { join } from 'path';
 import { NewOrderModule } from './new-order/new-order.module';
 import { NewUnitsModule } from './new-units/new-units.module';
 import { MaterialsModule } from './materials/materials.module';
-import { DrawingsModule } from './drawings/drawings.module';
+import { DrawingsModule } from './new-drawing/drawings.module';
 import { ViewsModule } from './view/views.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname ,'../..','drawings'),
+      rootPath: join(__dirname ,'pdf'),
     }),
     ViewsModule,
   DrawingsModule,

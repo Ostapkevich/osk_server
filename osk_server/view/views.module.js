@@ -8,12 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ViewsModule = void 0;
 const common_1 = require("@nestjs/common");
+const view_drawings_controller_1 = require("./view-drawings.controller");
 const app_service_1 = require("../app.service");
 let ViewsModule = class ViewsModule {
 };
 ViewsModule = __decorate([
     (0, common_1.Module)({
-        controllers: [],
+        controllers: [view_drawings_controller_1.ViewDrawingsController],
         providers: [app_service_1.AppService]
     })
 ], ViewsModule);

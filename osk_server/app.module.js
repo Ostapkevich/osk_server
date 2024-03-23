@@ -14,7 +14,7 @@ const path_1 = require("path");
 const new_order_module_1 = require("./new-order/new-order.module");
 const new_units_module_1 = require("./new-units/new-units.module");
 const materials_module_1 = require("./materials/materials.module");
-const drawings_module_1 = require("./drawings/drawings.module");
+const drawings_module_1 = require("./new-drawing/drawings.module");
 const views_module_1 = require("./view/views.module");
 let AppModule = class AppModule {
 };
@@ -22,7 +22,7 @@ AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             serve_static_1.ServeStaticModule.forRoot({
-                rootPath: (0, path_1.join)(__dirname, '../..', 'drawings'),
+                rootPath: (0, path_1.join)(__dirname, 'pdf'),
             }),
             views_module_1.ViewsModule,
             drawings_module_1.DrawingsModule,

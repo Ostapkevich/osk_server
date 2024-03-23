@@ -1,7 +1,8 @@
-import { Controller, Get, Query, Res,Param } from '@nestjs/common';
+import { Controller, Get, Query, Res, Param } from '@nestjs/common';
 import { AppService } from 'src/app.service';
 import { Response } from 'express';
 import * as path from 'path';
+import * as fs from 'fs';
 
 interface Idrawing {
   idDrawing?: number,
@@ -18,11 +19,26 @@ export class ViewDrawingsController {
 
   }
 
-  @Get('download/:pathDrawing')
-  downloadFile(@Res() res: Response, @Param('pathDrawing') path:string) {
-    const file = path; // Замените на путь к вашему файлу
-    res.download(file); // Отправить файл клиенту для скачивания
+  @Get('download')
+  async downloadFile(@Res() res: Response, @Query('path') pathDrawing: string) {
+    try {
+      let pathToPdf = '';
+      if (process.env.NODE_ENV === 'development') {
+        pathToPdf = path.join(__dirname, '..', '..');
+      } else {
+        pathToPdf = path.join(__dirname, '..');
+      }
+      const drawingsPath = path.join(pathToPdf, pathDrawing);
+      if (fs.existsSync(drawingsPath)) {
+        res.sendFile(drawingsPath);
+      } else {
+        res.sendFile(path.join(pathToPdf, 'pdf/notFound/notFound.pdf'));
+      }
+    } catch (error) {
+      res.json({ serverError: error.message });
+    }
   }
+
 
   @Get('selectDrawings')
   async viewDrawings(@Query() searchParams) {
@@ -51,7 +67,6 @@ export class ViewDrawingsController {
         params.push(searchParams.max);
       }
       let data: any = await this.appService.execute(sqlDrawings, params);
-      console.log(data[0])
       if ((data[0] as []).length > 0) {
         const sqlArray: string[] = [];
         let sqlDrawing = '';
@@ -117,19 +132,15 @@ export class ViewDrawingsController {
           }
           sqlSb = `SELECT CASE WHEN EXISTS (SELECT * FROM drawing_specification WHERE idDrawing=${item.idDrawing}) THEN 1 ELSE 0 END AS isSB;`
           dataDtawings = await this.appService.query(sqlDrawing);
-          dataSb= await this.appService.query(sqlSb);
-          dataDtawings[0][0][0].isSB=dataSb[0][0][0].isSB;
-          drawings.push( dataDtawings[0][0][0]);
+          dataSb = await this.appService.query(sqlSb);
+          dataDtawings[0][0][0].isSB = dataSb[0][0][0].isSB;
+          drawings.push(dataDtawings[0][0][0]);
         }
-
-     
-        console.log('drawings  ', drawings)
         return { drawings: drawings };
       } else {
         return { notFound: 'not found' };
       }
     } catch (error) {
-      console.log(error)
       return { serverError: error.message };
     }
   }

@@ -13,7 +13,7 @@ export class NewUnitsController {
       if ((order[0] as []).length === 0) {
         return order[0];
       } else {
-        const units = await this.appService.execute(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started,
+        const units = await this.appService.execute(`SELECT id_unit,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started,
        DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [id]);
         return [{ order: order[0], units: units[0] }];
       }
@@ -25,7 +25,7 @@ export class NewUnitsController {
   @Get('getUnits-:id')
   async getUnits(@Param('id') id: string) {
     try {
-      const data = await this.appService.query(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine='${id}' ORDER BY ind;`);
+      const data = await this.appService.query(`SELECT id_unit,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine='${id}' ORDER BY ind;`);
       return data[0][0];
     } catch (error) {
       return { serverError: error.message };
@@ -35,7 +35,7 @@ export class NewUnitsController {
   @Get('isEmptyUnit-:id')
   async isEmptyUnit(@Param('id') id: number) {
     try {
-      const data = await this.appService.execute(`SELECT id_specification FROM unit_consist WHERE id_specification=? LIMIT 1;`, [id]);
+      const data = await this.appService.execute(`SELECT id_unit FROM unit_consist WHERE id_unit=? LIMIT 1;`, [id]);
       return data[0];
     } catch (error) {
       return { serverError: error.message };
@@ -46,8 +46,8 @@ export class NewUnitsController {
   async deleteUnit(@Query('q0') sp: string,
   @Query('q1') order: string) {
     try {
-      await this.appService.execute(`DELETE FROM units WHERE id_specification=?;`, [sp]);
-      const data = await this.appService.execute(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [order]);
+      await this.appService.execute(`DELETE FROM units WHERE id_unit=?;`, [sp]);
+      const data = await this.appService.execute(`SELECT id_unit,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [order]);
       return data[0];
     } catch (error) {
       return { serverError: error.message };
@@ -65,7 +65,7 @@ export class NewUnitsController {
           updateInsertString +
           `(${item.id_specification}, '${item.order_machine}', '${item.ind}', '${item.name_unit}', '${item.number_unit}', '${item.unit}', ${item.weight}),`;
       }
-      updateInsertString = `INSERT INTO osk.units (id_specification, order_machine, ind, name_unit, number_unit, unit, weight)
+      updateInsertString = `INSERT INTO osk.units (id_unit, order_machine, ind, name_unit, number_unit, unit, weight)
   VALUES ${updateInsertString.slice(
         0,
         updateInsertString.length - 1,
@@ -77,7 +77,7 @@ export class NewUnitsController {
    unit=VALUES(unit),
    weight=VALUES (weight);`;
       await this.appService.query(updateInsertString);
-      const data = await this.appService.execute(`SELECT id_specification,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [id]);
+      const data = await this.appService.execute(`SELECT id_unit,unit, number_unit, name_unit, idauthor, status_unit, weight, DATE_FORMAT(started, '%Y-%m-%d') AS started , DATE_FORMAT(finished, '%Y-%m-%d') AS finished , users.nameUser FROM units LEFT JOIN users ON units.idauthor=users.iduser WHERE order_machine=? ORDER BY ind;`, [id]);
       return data[0];
     } catch (error) {
       return { serverError: error.message };

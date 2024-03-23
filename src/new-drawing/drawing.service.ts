@@ -1,54 +1,46 @@
-"use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DrawingService = void 0;
-const common_1 = require("@nestjs/common");
-const app_service_1 = require("../app.service");
-let DrawingService = class DrawingService {
-    constructor(appService) {
-        this.appService = appService;
-    }
-    async findDrawingInfoFull(partOfSql) {
+import { Injectable } from '@nestjs/common';
+import { AppService } from 'src/app.service';
+
+@Injectable()
+export class DrawingService {
+
+    constructor(private appService: AppService) { }
+
+    async findDrawingInfoFull(partOfSql: string) {
         try {
-            const drawingInfo = await this.drawingInfo(partOfSql);
+            const drawingInfo: any = await this.drawingInfo(partOfSql);
             if (!drawingInfo) {
                 return { notFound: 'not found' };
             }
-            let dataBlank;
+            let dataBlank: any;
             if (drawingInfo.type_blank) {
                 dataBlank = await this.blankInfo(drawingInfo.idDrawing, drawingInfo.type_blank);
             }
-            const dataMaterial = await this.materialInfo(drawingInfo.idDrawing);
-            const dataSP = await this.spInfo(drawingInfo.idDrawing);
+            const dataMaterial: any = await this.materialInfo(drawingInfo.idDrawing);
+            const dataSP: any = await this.spInfo(drawingInfo.idDrawing);
+
             return { drawing: drawingInfo, blank: dataBlank, materials: dataMaterial, positionsSP: dataSP };
-        }
-        catch (error) {
-            console.log('findDrawingInfoFull ERROR');
+        } catch (error) {
+            console.log('findDrawingInfoFull ERROR')
             return { serverError: error.message };
         }
     }
-    async drawingInfo(partOfSql) {
+
+    async drawingInfo(partOfSql: string): Promise<any[]> | undefined {
         try {
-            const sqlDrawing = `SELECT idDrawing, numberDrawing, nameDrawing, weight, type_blank, s, path FROM osk.drawings WHERE ${partOfSql};`;
-            const dataDrawing = await this.appService.query(sqlDrawing);
+            const sqlDrawing = `SELECT idDrawing, numberDrawing, nameDrawing, weight, type_blank, s, path FROM osk.drawings WHERE ${partOfSql};`
+            const dataDrawing: any = await this.appService.query(sqlDrawing);
             return dataDrawing[0][0][0];
-        }
-        catch (error) {
-            console.log('drawingInfo ERROR');
+        } catch (error) {
+            console.log('drawingInfo ERROR')
             throw error;
+            //return { serverError: error.message };
         }
     }
-    async blankInfo(idDrawing, typeBlank) {
+
+    async blankInfo(idDrawing: number, typeBlank: number) {
         try {
-            let dataBlank = undefined;
+            let dataBlank: any = undefined;
             let sqlBlank = '';
             switch (typeBlank) {
                 case 1:
@@ -75,44 +67,49 @@ let DrawingService = class DrawingService {
             }
             dataBlank = await this.appService.query(sqlBlank);
             return dataBlank ? dataBlank[0][0][0] : undefined;
-        }
-        catch (error) {
-            console.log('blankInfo ERROR');
+        } catch (error) {
+            console.log('blankInfo ERROR')
             throw error;
+            //return { serverError: error.message };
         }
     }
-    async materialInfo(idDrawing) {
+
+    async materialInfo(idDrawing: number) {
         try {
             const sqlMaterial = `SELECT drawing_materials.id, drawing_materials.idDrawing, drawing_materials.id_item, material.name_item, material.units, drawing_materials.percent, drawing_materials.value, drawing_materials.specific_units, drawing_materials.L, drawing_materials.h
            FROM drawing_materials INNER JOIN material ON drawing_materials.id_item=material.id_item WHERE drawing_materials.idDrawing=${idDrawing}`;
-            const dataMaterial = await this.appService.query(sqlMaterial);
+            const dataMaterial: any = await this.appService.query(sqlMaterial);
             return dataMaterial ? dataMaterial[0][0] : undefined;
-        }
-        catch (error) {
-            console.log('materialInfo ERROR');
+        } catch (error) {
+            console.log('materialInfo ERROR')
             throw error;
+            // return { serverError: error.message };
         }
     }
-    async spInfo(idDrawing) {
+
+    async spInfo(idDrawing: number) {
         try {
-            const positions = await this.appService.query(`SELECT id, type_position FROM drawing_specification WHERE  idDrawing= ${idDrawing} ORDER BY ind`);
-            let positionsSP = [];
-            let data;
+            const positions: any = await this.appService.query(`SELECT id, type_position FROM drawing_specification WHERE  idDrawing= ${idDrawing} ORDER BY ind`);
+            let positionsSP: any[] = [];
+            let data: any;
             for (const item of positions[0][0]) {
                 data = await this.selectPositionSP(item.type_position, item.id);
                 positionsSP.push(data);
             }
             return positionsSP.length === 0 ? undefined : positionsSP;
-        }
-        catch (error) {
-            console.log('spInfo ERROR');
+        } catch (error) {
+            console.log('spInfo ERROR')
             throw error;
+            // return { serverError: error.message };
         }
     }
-    async selectPositionSP(typePosition, id) {
+
+
+
+    async selectPositionSP(typePosition: number, id: number) {
         try {
             let sqlPosition = '';
-            let isSB;
+            let isSB: any;
             switch (typePosition) {
                 case 1:
                     sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, sprolled.id_sprolled AS idChild, sprolled.id_item AS idItem, sprolled.plasma, sprolled.L AS len, sprolled.d_b AS dw, sprolled.h, sprolled.name AS nameDrawing , 'б/ч' AS numberDrawing, rolled_type.uselength, rolled.name_item, rolled.weight
@@ -121,6 +118,7 @@ let DrawingService = class DrawingService {
                     INNER JOIN rolled ON rolled.id_item=sprolled.id_item
                     INNER JOIN rolled_type ON rolled.id_type=rolled_type.id_type
                     WHERE drawing_specification.id=${id};`;
+
                     break;
                 case 2:
                     sqlPosition = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, sphardware.id_sphardware AS idChild, sphardware.id_item AS idItem, sphardware.name AS nameDrawing, 'б/ч' AS numberDrawing, hardware.weight, hardware.name_item 
@@ -154,33 +152,36 @@ let DrawingService = class DrawingService {
                             WHERE sppurshasered.id=${id};`;
                     break;
                 case 5:
-                    const typeBlank = await this.appService.query(`SELECT drawings.type_blank, drawings.idDrawing FROM drawings INNER JOIN spdrawing ON drawings.idDrawing=spdrawing.idDrawing WHERE spdrawing.id=${id};`);
-                    console.log('typeBlank[0][0][0].type_blank ', typeBlank[0][0][0]);
+                    const typeBlank: any = await this.appService.query(`SELECT drawings.type_blank, drawings.idDrawing, drawings.path FROM drawings INNER JOIN spdrawing ON drawings.idDrawing=spdrawing.idDrawing WHERE spdrawing.id=${id};`);
+                    console.log('typeBlank[0][0][0].type_blank ', typeBlank[0][0][0])
                     sqlPosition = this.sqlDrawingPositionSP(typeBlank[0][0][0].type_blank, typeBlank[0][0][0].idDrawing, id);
                     isSB = await this.appService.query(`SELECT CASE WHEN EXISTS (SELECT * FROM drawing_specification WHERE idDrawing=${typeBlank[0][0][0].idDrawing}) THEN 1 ELSE 0 END AS isSB;`);
                     break;
             }
-            const dataPosition = await this.appService.query(sqlPosition);
+            // console.log('isSB - ', isSB[0][0][0])
+
+            const dataPosition: any = await this.appService.query(sqlPosition);
             if (typePosition === 5) {
                 dataPosition[0][0][0].isSB = isSB[0][0][0].isSB;
             }
-            console.log(dataPosition[0][0][0]);
+            console.log(dataPosition[0][0][0])
             return dataPosition[0][0][0];
-        }
-        catch (error) {
-            console.log('selectPositionSP ERROR');
-            console.log('typePosition ', typePosition);
-            console.log('id ', id);
-            console.log(error);
+        } catch (error) {
+            console.log('selectPositionSP ERROR')
+            console.log('typePosition ', typePosition)
+            console.log('id ', id)
+            console.log(error)
             throw error;
         }
     }
-    sqlDrawingPositionSP(typeBlank, idDrawing, id) {
+
+
+    sqlDrawingPositionSP(typeBlank: number, idDrawing: number, id: number): string {
         try {
             let sqlDrawing = '';
             switch (typeBlank) {
                 case 1:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.nameDrawing , drawings.weight, drawings.s, drawing_blank_rolled.plasma, (drawing_blank_rolled.L +drawing_blank_rolled.allowance) AS len, drawings.idDrawing AS idItem, (drawing_blank_rolled.d_b+drawing_blank_rolled.allowance) AS dw, (drawing_blank_rolled.h+drawing_blank_rolled.allowance) AS h, rolled.name_item,  rolled_type.uselength, 
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.nameDrawing , drawings.weight, drawings.s, drawings.path, drawing_blank_rolled.plasma, (drawing_blank_rolled.L +drawing_blank_rolled.allowance) AS len, drawings.idDrawing AS idItem, (drawing_blank_rolled.d_b+drawing_blank_rolled.allowance) AS dw, (drawing_blank_rolled.h+drawing_blank_rolled.allowance) AS h, rolled.name_item,  rolled_type.uselength, 
                     CASE
                         WHEN rolled_type.uselength=1 THEN (drawing_blank_rolled.L + drawing_blank_rolled.allowance)*rolled.weight/1000  
                         ELSE 
@@ -199,7 +200,7 @@ let DrawingService = class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 2:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild,drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing, drawings.weight, drawings.s,hardware.name_item, hardware.weight AS value
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild,drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing, drawings.weight, drawings.s, drawings.path,hardware.name_item, hardware.weight AS value
                     FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
@@ -209,7 +210,7 @@ let DrawingService = class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 3:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing , drawings.weight,drawings.s,drawing_blank_material.percent, drawing_blank_material.specific_units, drawing_blank_material.L AS len, drawing_blank_material.h, material.name_item, material.units, 
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem, drawings.nameDrawing , drawings.weight,drawings.s, drawings.path,  drawing_blank_material.percent, drawing_blank_material.specific_units, drawing_blank_material.L AS len, drawing_blank_material.h, material.name_item, material.units, 
                     CASE
                       WHEN drawing_blank_material.specific_units=0 THEN drawing_blank_material.percent*drawings.weight 
                       WHEN drawing_blank_material.specific_units=1 THEN drawing_blank_material.percent*drawings.s 
@@ -228,7 +229,7 @@ let DrawingService = class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 case 4:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem drawings.nameDrawing , drawings.weight,drawings.s, purchased.name_item, purchased.weight AS value
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity,spdrawing.id_spdrawing AS idChild, drawings.numberDrawing, drawings.idDrawing AS idItem drawings.nameDrawing , drawings.weight,drawings.s, drawings.path, purchased.name_item, purchased.weight AS value
                     FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
@@ -238,7 +239,7 @@ let DrawingService = class DrawingService {
                    WHERE drawing_specification.id=${id};`;
                     break;
                 default:
-                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing , drawings.weight , drawings.s, 'noBlank' AS noBlank
+                    sqlDrawing = `SELECT drawing_specification.id AS idParent, drawing_specification.type_position, drawing_specification.quantity, spdrawing.id_spdrawing AS idChild, drawings.idDrawing AS idItem, drawings.numberDrawing, drawings.nameDrawing , drawings.weight , drawings.s, drawings.path, 'noBlank' AS noBlank
                     FROM drawing_specification
                     INNER JOIN spdrawing ON drawing_specification.id=spdrawing.id
                     INNER JOIN drawings ON drawings.idDrawing=spdrawing.idDrawing
@@ -246,15 +247,8 @@ let DrawingService = class DrawingService {
                     break;
             }
             return sqlDrawing;
-        }
-        catch (error) {
+        } catch (error) {
             throw error;
         }
     }
-};
-DrawingService = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [app_service_1.AppService])
-], DrawingService);
-exports.DrawingService = DrawingService;
-//# sourceMappingURL=drawing.service.js.map
+}
